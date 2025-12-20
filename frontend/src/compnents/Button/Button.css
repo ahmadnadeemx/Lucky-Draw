@@ -1,0 +1,121 @@
+/* blue button */
+.blue-btn {
+  @apply flex items-center justify-center gap-2 px-4 py-2 
+               rounded-lg text-white font-medium
+               bg-gradient-to-r from-blue-500 to-cyan-600 
+               shadow-md hover:shadow-lg 
+               hover:from-blue-600 hover:to-cyan-500
+               focus:outline-none focus:ring-2 focus:ring-blue-400
+               transform hover:-translate-y-0.5
+               transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer;
+}
+
+.red-btn {
+  @apply flex items-center justify-center gap-2 px-4 py-2 
+         rounded-lg text-white font-medium
+         bg-gradient-to-r from-red-600 to-pink-600
+         shadow-md hover:shadow-lg 
+         hover:from-red-500 hover:to-pink-500
+         focus:outline-none focus:ring-2 focus:ring-red-400
+         transform hover:-translate-y-0.5
+         transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer;
+}
+
+/* Spinner Styles */
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top: 3px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Spinner Animation */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.blue-btn.loading {
+  color: transparent;
+  pointer-events: none;
+  background: linear-gradient(
+    0deg,
+    rgba(36, 123, 229, 1) 0%,
+    rgba(118, 181, 252, 1) 100%
+  );
+  box-shadow: 0 0.7em 1.5em -0.5em #247be5a0;
+}
+
+.blue-btn.loading .spinner {
+  visibility: visible;
+}
+.green-btn {
+  @apply flex items-center justify-center gap-2 px-3 py-1
+         rounded-md text-white font-semibold tracking-wide
+         bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500
+         hover:from-green-400 hover:via-emerald-400 hover:to-teal-400
+         active:scale-95
+         focus:outline-none focus:ring-2 focus:ring-emerald-300/70 focus:ring-offset-1
+         transition-all duration-300 ease-in-out
+         disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer;
+}
+
+.green-btn .spinner {
+  visibility: hidden;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top: 3px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+/* Spinner Styles */
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top: 3px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Spinner Animation */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.green-btn.loading {
+  color: transparent;
+  pointer-events: none;
+  background: linear-gradient(
+    0deg,
+    rgba(40, 167, 69, 1) 0%,
+    rgba(99, 210, 119, 1) 100%
+  );
+  box-shadow: 0 0.7em 1.5em -0.5em #28a745a0;
+}
+
+.green-btn.loading .spinner {
+  visibility: visible;
+}
+
+.cancel-btn {
+  @apply px-4 py-2 rounded-lg border border-gray-300 
+         dark:border-gray-600 text-gray-700 dark:text-gray-200 
+         bg-white dark:bg-gray-800 shadow-sm font-medium cursor-pointer
+         hover:bg-gray-100 dark:hover:bg-gray-700 
+         hover:border-gray-400 dark:hover:border-gray-500
+         focus:outline-none focus:ring-2 focus:ring-gray-300 
+         transition-all duration-300;
+}

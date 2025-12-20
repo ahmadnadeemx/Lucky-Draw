@@ -1,0 +1,51 @@
+/* Scrollbar for Webkit Browsers (Chrome, Edge, Safari) */
+::-webkit-scrollbar {
+  width: 8px; /* Scrollbar width */
+  height: 8px; /* Horizontal scrollbar height */
+}
+
+/* Track (background of the scrollbar) */
+::-webkit-scrollbar-track {
+  background: #2d2d2d; /* Dark gray track */
+  border-radius: 10px;
+}
+
+/* Handle (movable part of the scrollbar) */
+::-webkit-scrollbar-thumb {
+  background: #808080; /* Medium gray */
+  border-radius: 10px;
+  transition: background 0.3s ease;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #a0a0a0; /* Lighter gray on hover */
+}
+
+/* Scrollbar for Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #808080 #2d2d2d;
+}
+
+
+
+
+
+
+
+
+
+.rotate {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
