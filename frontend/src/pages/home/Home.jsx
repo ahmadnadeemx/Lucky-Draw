@@ -1,11 +1,13 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { FiPlus } from "react-icons/fi";
+import MembersTable from "./MembersTable";
 
 const Home = () => {
   return (
-    <div className="w-full bg-gray-100   dark:bg-gray-900 min-h-[calc(100vh-50px)] p-2 ">
-      <motion.header
+    <div className="w-full bg-gray-100   dark:bg-gray-900 min-h-[calc(100vh-50px)] ">
+      {/* Table */}
+      {/* <motion.header
         className="hidden sm:flex justify-between items-center p-6 bg-white dark:bg-gray-800 shadow-sm mb-4 rounded-lg"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -29,7 +31,9 @@ const Home = () => {
             <FiPlus /> Add Item
           </motion.button>
         </div>
-      </motion.header>
+      </motion.header> */}
+
+      <MembersTable />
     </div>
   );
 };

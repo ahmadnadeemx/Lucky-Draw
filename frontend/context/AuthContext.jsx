@@ -32,7 +32,6 @@ export const AuthProvider = ({ children }) => {
 
     try {
       const { data } = await authService.loginWithToken();
-      console.log("data : ", data);
 
       if (data?.userData && data?.isAdmin) {
         setUser(data.userData);

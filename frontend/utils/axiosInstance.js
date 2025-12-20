@@ -16,7 +16,6 @@ axiosInstance.interceptors.request.use((config) => {
 
 axiosInstance.interceptors.response.use(
   (response) => {
-    console.log("api response : ", response?.data);
     if (response?.data?.showMessage) {
       toast.success(response?.data?.message);
     }
