@@ -5,24 +5,33 @@ const START_COUNT = 7;
 
 const CountdownAnimation = ({ onComplete, isActive }) => {
   const [count, setCount] = useState(START_COUNT);
+  const [hasStarted, setHasStarted] = useState(false);
   const intervalRef = useRef(null);
 
   useEffect(() => {
-    if (!isActive) return;
+    if (!isActive) {
+      setHasStarted(false);
+      return;
+    }
 
+    // Reset state when activated
+    setHasStarted(true);
     setCount(START_COUNT);
 
+    // Start interval after a brief delay to avoid initial flash
     intervalRef.current = setInterval(() => {
       setCount((prev) => {
-        if (prev === 0) {
+        if (prev <= 1) {
           clearInterval(intervalRef.current);
           intervalRef.current = null;
-          onComplete?.();
+          setTimeout(() => {
+            onComplete?.();
+          }, 100);
           return 0;
         }
         return prev - 1;
       });
-    }, 1000); // ✅ exact 1 second
+    }, 1000);
 
     return () => {
       if (intervalRef.current) {
@@ -32,7 +41,7 @@ const CountdownAnimation = ({ onComplete, isActive }) => {
     };
   }, [isActive, onComplete]);
 
-  if (!isActive) return null;
+  if (!isActive || !hasStarted) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md">
@@ -63,10 +72,9 @@ const CountdownAnimation = ({ onComplete, isActive }) => {
             className="absolute inset-4 rounded-full border-4 border-orange-500/20"
           />
 
-          {/* Countdown container (NO text animation) */}
-          <div className="relative h-64 w-64 md:h-80 md:w-80 rounded-full  bg-gradient-to-br  from-black/50 to-gray-900/70 flex items-center justify-center border-8 border-yellow-500/40 shadow-2xl">
+          {/* Countdown container */}
+          <div className="relative h-64 w-64 md:h-80 md:w-80 rounded-full bg-gradient-to-br from-black/50 to-gray-900/70 flex items-center justify-center border-8 border-yellow-500/40 shadow-2xl">
             <div className="text-center">
-              {/* ✅ Plain text — no motion */}
               <div className="text-8xl md:text-9xl font-bold text-transparent bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 bg-clip-text dark:bg-none dark:text-white">
                 {count}
               </div>
@@ -99,7 +107,7 @@ const CountdownAnimation = ({ onComplete, isActive }) => {
           ))}
         </div>
 
-        {/* Progress bar — synced with countdown */}
+        {/* Progress bar */}
         <motion.div
           initial={{ width: "0%" }}
           animate={{ width: "100%" }}
