@@ -183,9 +183,61 @@ const updateMember = async (req, res) => {
   }
 };
 
+// @desc    Delete a member
+// @route   DELETE /api/members/:id
+// @access  Public
+const deleteMember = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Find the member to delete
+    const member = await Member.findById(id);
+    if (!member) {
+      return res.status(404).json({ 
+        message: 'Member not found',
+        showMessage: true 
+      });
+    }
+
+    // Store member info for response before deletion
+    const deletedMemberInfo = {
+      _id: member._id,
+      name: member.name,
+      fileNo: member.fileNo,
+      cnic: member.cnic
+    };
+
+    // Delete the member
+    await Member.findByIdAndDelete(id);
+
+    res.status(200).json({
+      message: 'Member deleted successfully',
+      deletedMember: deletedMemberInfo,
+      showMessage: true
+    });
+
+  } catch (error) {
+    console.error('Delete member error:', error);
+    
+    // Handle cast errors (invalid ID format)
+    if (error.name === 'CastError') {
+      return res.status(400).json({ 
+        message: 'Invalid member ID format',
+        showMessage: true 
+      });
+    }
+    
+    res.status(500).json({ 
+      message: 'Server Error',
+      showMessage: true 
+    });
+  }
+};
+
 module.exports = {
   getAllMembers,
   getMemberById,
   addMember,
-  updateMember 
+  updateMember,
+  deleteMember 
 };

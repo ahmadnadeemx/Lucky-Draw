@@ -10,9 +10,12 @@ import {
   FaCalendar,
   FaEye,
   FaEdit,
+  FaTrash,
 } from "react-icons/fa";
 import { GiMale, GiFemale } from "react-icons/gi";
-import UpdateMemberModal from "./UpdateMemberModal"; // Add this import
+import UpdateMemberModal from "./UpdateMemberModal";
+import DeleteConfirmationModal from "./DeleteConfirmationModal"; // Add this import
+import { useMembers } from "../../../context/MembersContext"; // Add this import
 
 const MembersTable = ({
   filteredMembers,
@@ -31,15 +34,74 @@ const MembersTable = ({
   verifiedMembers,
   pendingMembers,
 }) => {
-  // Add state for update modal
+  const { deleteMember } = useMembers(); // Add this
+
+  // State for update modal
   const [updateModalOpen, setUpdateModalOpen] = useState(false);
   const [memberToUpdate, setMemberToUpdate] = useState(null);
+
+  // State for delete modal
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [memberToDelete, setMemberToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState(null);
+  const [deleteSuccess, setDeleteSuccess] = useState(false);
 
   // Handle edit button click
   const handleEditClick = (member, e) => {
     e.stopPropagation();
     setMemberToUpdate(member);
     setUpdateModalOpen(true);
+  };
+
+  // Handle delete button click
+  const handleDeleteClick = (member, e) => {
+    e.stopPropagation();
+    setMemberToDelete(member);
+    setDeleteModalOpen(true);
+    setDeleteError(null);
+    setDeleteSuccess(false);
+  };
+
+  // Handle delete confirmation
+  const handleDeleteConfirm = async (memberId) => {
+    setIsDeleting(true);
+    setDeleteError(null);
+
+    try {
+      await deleteMember(memberId);
+      setDeleteSuccess(true);
+
+      // Auto-close after 2 seconds
+      setTimeout(() => {
+        setDeleteModalOpen(false);
+        setMemberToDelete(null);
+        setDeleteSuccess(false);
+      }, 2000);
+    } catch (error) {
+      // Handle API errors
+      if (error.response && error.response.data) {
+        const apiError = error.response.data;
+        setDeleteError(
+          apiError.message || "Failed to delete member. Please try again."
+        );
+      } else {
+        setDeleteError("Failed to delete member. Please try again.");
+      }
+      console.error("Delete member error:", error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // Close delete modal
+  const handleDeleteModalClose = () => {
+    if (!isDeleting && !deleteSuccess) {
+      setDeleteModalOpen(false);
+      setMemberToDelete(null);
+      setDeleteError(null);
+      setDeleteSuccess(false);
+    }
   };
 
   const handleMemberUpdated = (updatedMember) => {
@@ -163,7 +225,10 @@ const MembersTable = ({
                             whileTap={{ scale: 0.95 }}
                             onClick={() => {
                               setSearchQuery("");
-                              setFilters({ verification: "all", gender: "all" });
+                              setFilters({
+                                verification: "all",
+                                gender: "all",
+                              });
                             }}
                             className="mt-6 px-6 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all"
                           >
@@ -180,7 +245,9 @@ const MembersTable = ({
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.2 }}
-                      whileHover={{ backgroundColor: "rgba(59, 130, 246, 0.05)" }}
+                      whileHover={{
+                        backgroundColor: "rgba(59, 130, 246, 0.05)",
+                      }}
                       className="group cursor-pointer transition-all duration-200 border-b border-gray-100 dark:border-gray-700"
                       onClick={() => setSelectedMember(member)}
                     >
@@ -203,10 +270,10 @@ const MembersTable = ({
                           </motion.div>
                           <div>
                             <div className="flex items-center gap-2">
-                              <h3 className="font-[600] text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors text-lg">
+                              <h3 className="font-[600] text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors text-lg whitespace-nowrap">
                                 {member.name}
                               </h3>
-                              <span className="px-2 py-1 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-600 dark:to-gray-700 text-gray-700 dark:text-gray-300 text-xs font-semibold rounded-full">
+                              <span className="px-2 py-1 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-600 dark:to-gray-700 text-gray-700 dark:text-gray-300 text-xs font-semibold rounded-full whitespace-nowrap">
                                 {getAge(member.dob)} years
                               </span>
                             </div>
@@ -294,40 +361,90 @@ const MembersTable = ({
                         <div className="flex flex-col items-start gap-2">
                           <div className="flex items-center gap-2">
                             <FaCalendar className="h-4 w-4 text-blue-500" />
-                            <span className="text-md font-semibold text-gray-800 dark:text-gray-200">
+                            <span className="text-md font-semibold text-gray-800 dark:text-gray-200 whitespace-nowrap">
                               {formatDate(member.createdAt)}
                             </span>
                           </div>
                           <div className="px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-lg">
-                            <span className="text-sm text-gray-600 dark:text-gray-400 font-semibold">
-                              Member since  <span className="text-blue-700 dark:text-green-500">{formatDate(member.createdAt)}</span>
+                            <span className="text-sm text-gray-600 dark:text-gray-400 font-semibold whitespace-nowrap">
+                              Member since{" "}
+                              <span className="text-blue-700 dark:text-green-500">
+                                {formatDate(member.createdAt)}
+                              </span>
                             </span>
                           </div>
                         </div>
                       </td>
                       <td className="bg-white dark:bg-gray-800 group-hover:bg-blue-50 dark:group-hover:bg-gray-700/50 p-4 border-l border-gray-100 dark:border-gray-700">
-                        <div className="flex items-center justify-center gap-2 flex-col md:flex-row">
-                          <motion.button
-                            whileHover={{ scale: 1.1, rotate: 5 }}
-                            whileTap={{ scale: 0.9 }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedMember(member);
-                            }}
-                            className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 transition-all"
-                            title="View Details"
-                          >
-                            <FaEye className="h-4 w-4 text-white" />
-                          </motion.button>
-                          <motion.button
-                            whileHover={{ scale: 1.1, rotate: -5 }}
-                            whileTap={{ scale: 0.9 }}
-                            onClick={(e) => handleEditClick(member, e)}
-                            className="h-10 w-10 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-green-500/30 hover:shadow-green-500/50 transition-all"
-                            title="Edit"
-                          >
-                            <FaEdit className="h-4 w-4 text-white" />
-                          </motion.button>
+                        <div className="flex flex-col md:flex-row items-center justify-center gap-2 md:gap-2">
+                          {/* Mobile Layout: Eye icon on left, Delete/Edit stacked on right */}
+                          {/* Desktop Layout: All icons in a row */}
+
+                          <div className="flex flex-row md:flex-row items-center justify-between w-full md:w-auto gap-2 md:gap-2">
+                            {/* View Button (Eye icon) - Left side on mobile, in row on desktop */}
+                            <motion.button
+                              whileHover={{ scale: 1.1, rotate: 5 }}
+                              whileTap={{ scale: 0.9 }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedMember(member);
+                              }}
+                              className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 transition-all md:order-1"
+                              title="View Details"
+                            >
+                              <FaEye className="h-4 w-4 text-white" />
+                            </motion.button>
+
+                            {/* Desktop: Delete and Edit buttons in row */}
+                            <div className="hidden md:flex items-center gap-2">
+                              {/* Delete Button */}
+                              <motion.button
+                                whileHover={{ scale: 1.1, rotate: 5 }}
+                                whileTap={{ scale: 0.9 }}
+                                onClick={(e) => handleDeleteClick(member, e)}
+                                className="h-10 w-10 rounded-full bg-gradient-to-r from-red-500 to-rose-500 flex items-center justify-center shadow-lg shadow-red-500/30 hover:shadow-red-500/50 transition-all"
+                                title="Delete"
+                              >
+                                <FaTrash className="h-4 w-4 text-white" />
+                              </motion.button>
+
+                              {/* Update / Edit Button */}
+                              <motion.button
+                                whileHover={{ scale: 1.1, rotate: -5 }}
+                                whileTap={{ scale: 0.9 }}
+                                onClick={(e) => handleEditClick(member, e)}
+                                className="h-10 w-10 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-green-500/30 hover:shadow-green-500/50 transition-all"
+                                title="Edit"
+                              >
+                                <FaEdit className="h-4 w-4 text-white" />
+                              </motion.button>
+                            </div>
+
+                            {/* Mobile: Delete and Edit buttons stacked vertically on right side */}
+                            <div className="flex md:hidden flex-col items-center gap-2">
+                              {/* Delete Button */}
+                              <motion.button
+                                whileHover={{ scale: 1.1, rotate: 5 }}
+                                whileTap={{ scale: 0.9 }}
+                                onClick={(e) => handleDeleteClick(member, e)}
+                                className="h-10 w-10 rounded-full bg-gradient-to-r from-red-500 to-rose-500 flex items-center justify-center shadow-lg shadow-red-500/30 hover:shadow-red-500/50 transition-all"
+                                title="Delete"
+                              >
+                                <FaTrash className="h-4 w-4 text-white" />
+                              </motion.button>
+
+                              {/* Update / Edit Button */}
+                              <motion.button
+                                whileHover={{ scale: 1.1, rotate: -5 }}
+                                whileTap={{ scale: 0.9 }}
+                                onClick={(e) => handleEditClick(member, e)}
+                                className="h-10 w-10 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-green-500/30 hover:shadow-green-500/50 transition-all"
+                                title="Edit"
+                              >
+                                <FaEdit className="h-4 w-4 text-white" />
+                              </motion.button>
+                            </div>
+                          </div>
                         </div>
                       </td>
                     </motion.tr>
@@ -375,6 +492,17 @@ const MembersTable = ({
         }}
         member={memberToUpdate}
         onMemberUpdated={handleMemberUpdated}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={deleteModalOpen}
+        onClose={handleDeleteModalClose}
+        member={memberToDelete}
+        onConfirm={handleDeleteConfirm}
+        isDeleting={isDeleting}
+        deleteError={deleteError}
+        deleteSuccess={deleteSuccess}
       />
     </>
   );

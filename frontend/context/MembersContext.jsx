@@ -88,6 +88,29 @@ export const MembersProvider = ({ children }) => {
     }
   };
 
+  // Delete existing member
+  const deleteMember = async (id) => {
+    try {
+      setLoading(true);
+      const response = await axiosInstance.delete(`/members/${id}`);
+
+      // Update local state instantly (fast UX)
+      setMembers((prev) => prev.filter((member) => member._id !== id));
+
+      // Clear selected member if it's the same
+      if (selectedMember && selectedMember._id === id) {
+        setSelectedMember(null);
+      }
+
+      return response.data;
+    } catch (error) {
+      console.error("Failed to delete member", error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // ===============================
   // AUTH-BASED AUTO LOGIC
   // ===============================
@@ -117,6 +140,7 @@ export const MembersProvider = ({ children }) => {
     getMemberById,
     addMember,
     updateMember,
+    deleteMember, // Add this
 
     setSelectedMember,
   };

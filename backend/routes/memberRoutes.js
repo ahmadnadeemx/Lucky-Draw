@@ -6,7 +6,8 @@ const {
   getAllMembers,
   getMemberById,
   addMember,
-  updateMember // Add this import
+  updateMember,
+  deleteMember // Add this import
 } = require('../controllers/memberController');
 
 // GET all members
@@ -19,6 +20,9 @@ router.get('/:id', getMemberById);
 router.post('/', addMember);
 
 // PUT update existing member
-router.put('/:id', updateMember); 
+router.put('/:id', updateMember);
+
+// DELETE remove member
+router.delete('/:id', deleteMember); 
 
 module.exports = router;
