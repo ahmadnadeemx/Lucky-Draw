@@ -23,7 +23,6 @@ const memberSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
-    match: /^\d{5}-\d{7}-\d$/, // CNIC format: 12345-1234567-1
     trim: true
   },
   gender: {

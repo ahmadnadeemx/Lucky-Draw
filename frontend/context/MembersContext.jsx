@@ -63,6 +63,31 @@ export const MembersProvider = ({ children }) => {
     }
   };
 
+  // Update existing member
+  const updateMember = async (id, memberData) => {
+    try {
+      setLoading(true);
+      const response = await axiosInstance.put(`/members/${id}`, memberData);
+
+      // Update local state instantly (fast UX)
+      setMembers((prev) =>
+        prev.map((member) => (member._id === id ? response.data : member))
+      );
+
+      // Update selected member if it's the same
+      if (selectedMember && selectedMember._id === id) {
+        setSelectedMember(response.data);
+      }
+
+      return response.data;
+    } catch (error) {
+      console.error("Failed to update member", error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // ===============================
   // AUTH-BASED AUTO LOGIC
   // ===============================
@@ -80,10 +105,6 @@ export const MembersProvider = ({ children }) => {
     }
   }, [isLogin]);
 
-  useEffect(() => {
-    console.log("members : ", members);
-  }, [members]);
-
   // ===============================
   // CONTEXT VALUE
   // ===============================
@@ -95,6 +116,7 @@ export const MembersProvider = ({ children }) => {
     getAllMembers,
     getMemberById,
     addMember,
+    updateMember,
 
     setSelectedMember,
   };

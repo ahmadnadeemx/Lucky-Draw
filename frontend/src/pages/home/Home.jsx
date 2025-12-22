@@ -20,10 +20,12 @@ import {
   FaPrint,
   FaEye,
   FaEdit,
+  FaUserPlus, // Add this
 } from "react-icons/fa";
 import { GiMale, GiFemale } from "react-icons/gi";
 import MemberDetailModal from "./MemberDetailModal";
 import MembersTable from "./MembersTable";
+import AddMemberModal from "./AddMemberModal";
 
 const Home = () => {
   const { members } = useMembers();
@@ -43,6 +45,10 @@ const Home = () => {
     bottom: false,
   });
 
+  const [showAddMemberModal, setShowAddMemberModal] = useState(false);
+  const handleMemberAdded = (newMember) => {
+    // can add logic here
+  };
   // Filter and sort members
   const filteredMembers = useMemo(() => {
     let result = [...members];
@@ -290,16 +296,28 @@ const Home = () => {
       >
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-600 bg-clip-text text-transparent animate-gradient bg-[length:200%_auto]">
+            <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-600 bg-clip-text text-transparent animate-gradient bg-[length:200%_auto] h-[45px]">
               Lucky Draw Participants
             </h1>
-            <p className="text-gray-600 dark:text-gray-300 mt-2">
+            <p className="text-gray-600 dark:text-gray-300 mt-1 md:mt-2">
               Welcome to the lucky draw participants dashboard
             </p>
           </div>
 
           {/* Export Controls */}
-          <div className="flex items-center gap-3">
+          {/* Export Controls */}
+          <div className="flex items-center gap-3 flex-wrap">
+            {/* Add this button */}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setShowAddMemberModal(true)}
+              className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl flex items-center gap-2 shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all"
+            >
+              <FaUserPlus className="h-5 w-5" />
+              Add Participant
+            </motion.button>
+
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -534,6 +552,22 @@ const Home = () => {
         formatDate={formatDate}
         verifiedMembers={verifiedMembers}
         pendingMembers={pendingMembers}
+      />
+
+      {/* Member Detail Modal */}
+      <AnimatePresence>
+        {selectedMember && (
+          <MemberDetailModal
+            member={selectedMember}
+            onClose={() => setSelectedMember(null)}
+          />
+        )}
+      </AnimatePresence>
+      {/* Add Member Modal */}
+      <AddMemberModal
+        isOpen={showAddMemberModal}
+        onClose={() => setShowAddMemberModal(false)}
+        onMemberAdded={handleMemberAdded}
       />
 
       {/* Member Detail Modal */}

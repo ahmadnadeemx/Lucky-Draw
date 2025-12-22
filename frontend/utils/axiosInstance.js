@@ -22,7 +22,6 @@ axiosInstance.interceptors.response.use(
     return response;
   },
   (error) => {
-    console.log("api error : ", error);
 
     if (error.response) {
       if (error?.response?.data?.showMessage) {
