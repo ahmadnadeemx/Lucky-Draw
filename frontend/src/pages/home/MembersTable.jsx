@@ -138,7 +138,7 @@ const MembersTable = ({
           {/* Table with Excel-like scrolling */}
           <div
             ref={tableContainerRef}
-            className="overflow-auto max-h-[calc(100vh-400px)] max-h-[600px]"
+            className="overflow-auto max-h-[600px]"
           >
             <table className="w-full min-w-[1200px]">
               <thead className="sticky top-0 z-20">
