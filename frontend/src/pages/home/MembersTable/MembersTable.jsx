@@ -13,9 +13,10 @@ import {
   FaTrash,
 } from "react-icons/fa";
 import { GiMale, GiFemale } from "react-icons/gi";
-import UpdateMemberModal from "./UpdateMemberModal";
-import DeleteConfirmationModal from "./DeleteConfirmationModal"; // Add this import
-import { useMembers } from "../../../context/MembersContext"; // Add this import
+import UpdateMemberModal from "../UpdateMemberModal";
+import DeleteConfirmationModal from "../DeleteConfirmationModal";
+import { useMembers } from "../../../../context/MembersContext";
+import MembersTableSkeleton from "./MembersTableSkeleton";
 
 const MembersTable = ({
   filteredMembers,
@@ -34,8 +35,11 @@ const MembersTable = ({
   verifiedMembers,
   pendingMembers,
 }) => {
-  const { deleteMember } = useMembers(); // Add this
+  const { deleteMember, loading } = useMembers();
 
+  if (loading) {
+    return <MembersTableSkeleton rows={5} />;
+  }
   // State for update modal
   const [updateModalOpen, setUpdateModalOpen] = useState(false);
   const [memberToUpdate, setMemberToUpdate] = useState(null);
@@ -136,10 +140,7 @@ const MembersTable = ({
           )}
 
           {/* Table with Excel-like scrolling */}
-          <div
-            ref={tableContainerRef}
-            className="overflow-auto max-h-[600px]"
-          >
+          <div ref={tableContainerRef} className="overflow-auto max-h-[600px]">
             <table className="w-full min-w-[1200px]">
               <thead className="sticky top-0 z-20">
                 <tr className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900">

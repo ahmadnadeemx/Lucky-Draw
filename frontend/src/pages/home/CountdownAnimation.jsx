@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
 
-const START_COUNT = 9;
+const START_COUNT = 7;
 
 const CountdownAnimation = ({ onComplete, isActive }) => {
   const [count, setCount] = useState(START_COUNT);

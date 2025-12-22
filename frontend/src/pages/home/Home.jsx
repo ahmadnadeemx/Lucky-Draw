@@ -24,14 +24,15 @@ import {
 } from "react-icons/fa";
 import { GiMale, GiFemale } from "react-icons/gi";
 import MemberDetailModal from "./MemberDetailModal";
-import MembersTable from "./MembersTable";
+import MembersTable from "./MembersTable/MembersTable";
 import AddMemberModal from "./AddMemberModal";
 import CountdownAnimation from "./CountdownAnimation";
 import WinnerResultModal from "./WinnerResultModal";
 import LuckyDrawButton from "./LuckyDrawButton";
+import LuckyDrawSkeleton from "./LuckyDrawSkeleton";
 
 const Home = () => {
-  const { members, performLuckyDraw } = useMembers();
+  const { members, performLuckyDraw, loading } = useMembers();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedMember, setSelectedMember] = useState(null);
 
@@ -350,44 +351,51 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-slate-900 p-2 sm:p-4 md:p-6">
       {/* Lucky Draw Section */}
-      <motion.div
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.3 }}
-        className="my-12 text-center"
-      >
-        <div className="max-w-4xl mx-auto">
-          <div className="mb-8">
-            <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 bg-clip-text text-transparent mb-4">
-              🎉 GRAND LUCKY DRAW 🎉
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400 text-lg mb-6">
-              Click the button below to randomly select one lucky winner from{" "}
-              {totalMembers} participants!
-            </p>
+      {loading ? (
+        <LuckyDrawSkeleton />
+      ) : (
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="my-12 text-center"
+        >
+          <div className="max-w-4xl mx-auto">
+            <div className="mb-8">
+              <h2 className="text-4xl md:text-5xl font-bold mb-4">
+                🎉{" "}
+                <span className=" bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 bg-clip-text text-transparent">
+                  GRAND LUCKY DRAW
+                </span>
+                🎉
+              </h2>
+              <p className="text-gray-600 dark:text-gray-400 text-lg mb-6">
+                Click the button below to randomly select one lucky winner from{" "}
+                {totalMembers} participants!
+              </p>
 
-            {totalMembers > 0 ? (
-              <div className="text-center">
-                <LuckyDrawButton
-                  onClick={handleLuckyDraw}
-                  isLoading={isDrawInProgress}
-                  disabled={members.length === 0 || isDrawInProgress}
-                />
-                <p className="mt-4 text-gray-500 dark:text-gray-400">
-                  {members.length} participants are eligible for the draw
-                </p>
-              </div>
-            ) : (
-              <div className="text-center p-8 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-2xl">
-                <p className="text-xl text-gray-600 dark:text-gray-400">
-                  Add participants first to start the lucky draw!
-                </p>
-              </div>
-            )}
+              {totalMembers > 0 ? (
+                <div className="text-center">
+                  <LuckyDrawButton
+                    onClick={handleLuckyDraw}
+                    isLoading={isDrawInProgress}
+                    disabled={members.length === 0 || isDrawInProgress}
+                  />
+                  <p className="mt-4 text-gray-500 dark:text-gray-400">
+                    {members.length} participants are eligible for the draw
+                  </p>
+                </div>
+              ) : (
+                <div className="text-center p-8 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-2xl">
+                  <p className="text-xl text-gray-600 dark:text-gray-400">
+                    Add participants first to start the lucky draw!
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      </motion.div>
-
+        </motion.div>
+      )}
       {/* Header Section */}
       <motion.div
         initial={{ y: -20, opacity: 0 }}
