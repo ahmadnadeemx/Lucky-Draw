@@ -13,6 +13,8 @@ export const MembersProvider = ({ children }) => {
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedMember, setSelectedMember] = useState(null);
+  const [drawResult, setDrawResult] = useState(null); // Add this
+  const [isDrawing, setIsDrawing] = useState(false); // Add this
 
   // ===============================
   // API FUNCTIONS
@@ -111,6 +113,33 @@ export const MembersProvider = ({ children }) => {
     }
   };
 
+  // Lucky Draw - Get random member
+  const performLuckyDraw = async () => {
+    try {
+      setIsDrawing(true);
+      setDrawResult(null);
+      
+      const response = await axiosInstance.get("/members/draw/random");
+      
+      if (response.data.success) {
+        setDrawResult(response.data);
+        return response.data;
+      } else {
+        throw new Error(response.data.message || 'Failed to perform draw');
+      }
+    } catch (error) {
+      console.error("Lucky draw error:", error);
+      throw error;
+    } finally {
+      setIsDrawing(false);
+    }
+  };
+
+  // Clear draw result
+  const clearDrawResult = () => {
+    setDrawResult(null);
+  };
+
   // ===============================
   // AUTH-BASED AUTO LOGIC
   // ===============================
@@ -125,6 +154,7 @@ export const MembersProvider = ({ children }) => {
     if (!isLogin) {
       setMembers([]);
       setSelectedMember(null);
+      setDrawResult(null);
     }
   }, [isLogin]);
 
@@ -135,12 +165,16 @@ export const MembersProvider = ({ children }) => {
     members,
     loading,
     selectedMember,
+    drawResult, // Add this
+    isDrawing, // Add this
 
     getAllMembers,
     getMemberById,
     addMember,
     updateMember,
-    deleteMember, // Add this
+    deleteMember,
+    performLuckyDraw, // Add this
+    clearDrawResult, // Add this
 
     setSelectedMember,
   };

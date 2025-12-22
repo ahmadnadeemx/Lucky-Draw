@@ -44,7 +44,7 @@ const MemberDetailModal = ({ member, onClose }) => {
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
-        <div className={`relative h-40 ${member.bmVerification ? 'bg-gradient-to-r from-emerald-600 to-green-500' : 'bg-gradient-to-r from-blue-600 to-cyan-500'}`}>
+        <div className={`relative h-[120px] ${member.bmVerification ? 'bg-gradient-to-r from-emerald-600 to-green-500' : 'bg-gradient-to-r from-blue-600 to-cyan-500'}`}>
           <button
             onClick={onClose}
             className="absolute top-4 right-4 h-10 w-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/30 transition-all duration-300 hover:rotate-90"

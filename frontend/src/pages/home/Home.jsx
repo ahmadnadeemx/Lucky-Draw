@@ -26,11 +26,73 @@ import { GiMale, GiFemale } from "react-icons/gi";
 import MemberDetailModal from "./MemberDetailModal";
 import MembersTable from "./MembersTable";
 import AddMemberModal from "./AddMemberModal";
+import CountdownAnimation from "./CountdownAnimation";
+import WinnerResultModal from "./WinnerResultModal";
+import LuckyDrawButton from "./LuckyDrawButton";
 
 const Home = () => {
-  const { members } = useMembers();
+  const { members, performLuckyDraw } = useMembers();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedMember, setSelectedMember] = useState(null);
+
+  const [isDrawInProgress, setIsDrawInProgress] = useState(false);
+  const [showCountdown, setShowCountdown] = useState(false);
+  const [showWinnerModal, setShowWinnerModal] = useState(false);
+  const [drawWinner, setDrawWinner] = useState(null);
+
+  const handleLuckyDraw = async () => {
+    if (members.length === 0) {
+      alert("No participants available for the draw!");
+      return;
+    }
+
+    try {
+      setIsDrawInProgress(true);
+      setShowCountdown(true);
+      setDrawWinner(null); // Reset previous winner
+
+      // Start the API call immediately but store the promise
+      const drawPromise = performLuckyDraw();
+
+      // Let the countdown animation run its course (7 seconds for 7-0 countdown)
+      const countdownDuration = 7000; // 7 seconds for 7-0 countdown
+
+      // Create a timeout that will complete after countdown
+      const countdownTimeout = setTimeout(async () => {
+        try {
+          // Now wait for the API result (it might already be resolved or still pending)
+          const result = await drawPromise;
+          setDrawWinner(result);
+          setShowWinnerModal(true);
+        } catch (error) {
+          console.error("Draw failed:", error);
+          alert(error.response?.data?.message || "Failed to perform draw");
+        } finally {
+          setShowCountdown(false);
+          setIsDrawInProgress(false);
+        }
+      }, countdownDuration);
+
+      // Store the timeout to clear if needed
+      return () => clearTimeout(countdownTimeout);
+    } catch (error) {
+      console.error("Draw error:", error);
+      setIsDrawInProgress(false);
+      setShowCountdown(false);
+    }
+  };
+
+  // Add this function for countdown completion
+  const handleCountdownComplete = () => {
+    // This is handled in the setTimeout above
+  };
+
+  // Add this function to close winner modal
+  const handleCloseWinnerModal = () => {
+    setShowWinnerModal(false);
+    setDrawWinner(null);
+  };
+
   const [sortConfig, setSortConfig] = useState({
     key: "name",
     direction: "asc",
@@ -287,6 +349,45 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-slate-900 p-2 sm:p-4 md:p-6">
+      {/* Lucky Draw Section */}
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.3 }}
+        className="my-12 text-center"
+      >
+        <div className="max-w-4xl mx-auto">
+          <div className="mb-8">
+            <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 bg-clip-text text-transparent mb-4">
+              🎉 GRAND LUCKY DRAW 🎉
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 text-lg mb-6">
+              Click the button below to randomly select one lucky winner from{" "}
+              {totalMembers} participants!
+            </p>
+
+            {totalMembers > 0 ? (
+              <div className="text-center">
+                <LuckyDrawButton
+                  onClick={handleLuckyDraw}
+                  isLoading={isDrawInProgress}
+                  disabled={members.length === 0 || isDrawInProgress}
+                />
+                <p className="mt-4 text-gray-500 dark:text-gray-400">
+                  {members.length} participants are eligible for the draw
+                </p>
+              </div>
+            ) : (
+              <div className="text-center p-8 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-2xl">
+                <p className="text-xl text-gray-600 dark:text-gray-400">
+                  Add participants first to start the lucky draw!
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </motion.div>
+
       {/* Header Section */}
       <motion.div
         initial={{ y: -20, opacity: 0 }}
@@ -563,6 +664,37 @@ const Home = () => {
           />
         )}
       </AnimatePresence>
+      {/* Add Member Modal */}
+      <AddMemberModal
+        isOpen={showAddMemberModal}
+        onClose={() => setShowAddMemberModal(false)}
+        onMemberAdded={handleMemberAdded}
+      />
+
+      {/* Member Detail Modal */}
+      <AnimatePresence>
+        {selectedMember && (
+          <MemberDetailModal
+            member={selectedMember}
+            onClose={() => setSelectedMember(null)}
+          />
+        )}
+      </AnimatePresence>
+      {/* Countdown Animation */}
+      <CountdownAnimation
+        onComplete={handleCountdownComplete}
+        isActive={showCountdown}
+        drawResult={drawWinner}
+        apiLoading={isDrawInProgress}
+      />
+
+      <WinnerResultModal
+        isOpen={showWinnerModal}
+        onClose={handleCloseWinnerModal}
+        winnerData={drawWinner?.winner}
+        totalParticipants={totalMembers}
+      />
+
       {/* Add Member Modal */}
       <AddMemberModal
         isOpen={showAddMemberModal}

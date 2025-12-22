@@ -1,6 +1,6 @@
 // controllers/memberController.js
 
-const Member = require('../models/Member');
+const Member = require("../models/Member");
 
 // @desc    Get all members
 // @route   GET /api/members
@@ -11,7 +11,7 @@ const getAllMembers = async (req, res) => {
     res.status(200).json(members);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server Error' });
+    res.status(500).json({ message: "Server Error" });
   }
 };
 
@@ -22,12 +22,12 @@ const getMemberById = async (req, res) => {
   try {
     const member = await Member.findById(req.params.id);
     if (!member) {
-      return res.status(404).json({ message: 'Member not found' });
+      return res.status(404).json({ message: "Member not found" });
     }
     res.status(200).json(member);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server Error' });
+    res.status(500).json({ message: "Server Error" });
   }
 };
 
@@ -46,15 +46,17 @@ const addMember = async (req, res) => {
       bmVerification,
       feesVoucher,
       email,
-      mobile
+      mobile,
     } = req.body;
 
     // Check for duplicate CNIC or fileNo
-    const existingMember = await Member.findOne({ $or: [{ cnic }, { fileNo }] });
+    const existingMember = await Member.findOne({
+      $or: [{ cnic }, { fileNo }],
+    });
     if (existingMember) {
-      return res.status(400).json({ 
-        message: 'Member with this CNIC or File No already exists',
-        showMessage: true 
+      return res.status(400).json({
+        message: "Member with this CNIC or File No already exists",
+        showMessage: true,
       });
     }
 
@@ -68,15 +70,14 @@ const addMember = async (req, res) => {
       bmVerification,
       feesVoucher,
       email,
-      mobile
+      mobile,
     });
 
     const savedMember = await newMember.save();
     res.status(201).json(savedMember);
-
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server Error', showMessage: true });
+    res.status(500).json({ message: "Server Error", showMessage: true });
   }
 };
 
@@ -96,15 +97,15 @@ const updateMember = async (req, res) => {
       bmVerification,
       feesVoucher,
       email,
-      mobile
+      mobile,
     } = req.body;
 
     // Find the member to update
     let member = await Member.findById(id);
     if (!member) {
-      return res.status(404).json({ 
-        message: 'Member not found',
-        showMessage: true 
+      return res.status(404).json({
+        message: "Member not found",
+        showMessage: true,
       });
     }
 
@@ -112,14 +113,14 @@ const updateMember = async (req, res) => {
     const existingMember = await Member.findOne({
       $and: [
         { _id: { $ne: id } }, // Not the current member
-        { $or: [{ cnic }, { fileNo }] }
-      ]
+        { $or: [{ cnic }, { fileNo }] },
+      ],
     });
 
     if (existingMember) {
-      return res.status(400).json({ 
-        message: 'Another member with this CNIC or File No already exists',
-        showMessage: true 
+      return res.status(400).json({
+        message: "Another member with this CNIC or File No already exists",
+        showMessage: true,
       });
     }
 
@@ -130,7 +131,8 @@ const updateMember = async (req, res) => {
     member.cnic = cnic || member.cnic;
     member.gender = gender || member.gender;
     member.dob = dob || member.dob;
-    member.bmVerification = bmVerification !== undefined ? bmVerification : member.bmVerification;
+    member.bmVerification =
+      bmVerification !== undefined ? bmVerification : member.bmVerification;
     member.feesVoucher = feesVoucher || member.feesVoucher;
     member.email = email || member.email;
     member.mobile = mobile || member.mobile;
@@ -139,7 +141,7 @@ const updateMember = async (req, res) => {
     member.updatedAt = Date.now();
 
     const updatedMember = await member.save();
-    
+
     res.status(200).json({
       _id: updatedMember._id,
       fileNo: updatedMember.fileNo,
@@ -153,32 +155,31 @@ const updateMember = async (req, res) => {
       email: updatedMember.email,
       mobile: updatedMember.mobile,
       createdAt: updatedMember.createdAt,
-      updatedAt: updatedMember.updatedAt
+      updatedAt: updatedMember.updatedAt,
     });
-
   } catch (error) {
-    console.error('Update member error:', error);
-    
+    console.error("Update member error:", error);
+
     // Handle validation errors
-    if (error.name === 'ValidationError') {
-      return res.status(400).json({ 
-        message: 'Validation Error',
+    if (error.name === "ValidationError") {
+      return res.status(400).json({
+        message: "Validation Error",
         details: error.message,
-        showMessage: true 
+        showMessage: true,
       });
     }
-    
+
     // Handle cast errors (invalid ID format)
-    if (error.name === 'CastError') {
-      return res.status(400).json({ 
-        message: 'Invalid member ID format',
-        showMessage: true 
+    if (error.name === "CastError") {
+      return res.status(400).json({
+        message: "Invalid member ID format",
+        showMessage: true,
       });
     }
-    
-    res.status(500).json({ 
-      message: 'Server Error',
-      showMessage: true 
+
+    res.status(500).json({
+      message: "Server Error",
+      showMessage: true,
     });
   }
 };
@@ -193,9 +194,9 @@ const deleteMember = async (req, res) => {
     // Find the member to delete
     const member = await Member.findById(id);
     if (!member) {
-      return res.status(404).json({ 
-        message: 'Member not found',
-        showMessage: true 
+      return res.status(404).json({
+        message: "Member not found",
+        showMessage: true,
       });
     }
 
@@ -204,32 +205,103 @@ const deleteMember = async (req, res) => {
       _id: member._id,
       name: member.name,
       fileNo: member.fileNo,
-      cnic: member.cnic
+      cnic: member.cnic,
     };
 
     // Delete the member
     await Member.findByIdAndDelete(id);
 
     res.status(200).json({
-      message: 'Member deleted successfully',
+      message: "Member deleted successfully",
       deletedMember: deletedMemberInfo,
-      showMessage: true
+      showMessage: true,
     });
-
   } catch (error) {
-    console.error('Delete member error:', error);
-    
+    console.error("Delete member error:", error);
+
     // Handle cast errors (invalid ID format)
-    if (error.name === 'CastError') {
-      return res.status(400).json({ 
-        message: 'Invalid member ID format',
-        showMessage: true 
+    if (error.name === "CastError") {
+      return res.status(400).json({
+        message: "Invalid member ID format",
+        showMessage: true,
       });
     }
-    
-    res.status(500).json({ 
-      message: 'Server Error',
-      showMessage: true 
+
+    res.status(500).json({
+      message: "Server Error",
+      showMessage: true,
+    });
+  }
+};
+
+// @desc    Get random member for lucky draw
+// @route   GET /api/members/draw/random
+// @access  Public
+const getRandomMember = async (req, res) => {
+  try {
+    // Get total count of members
+    const totalMembers = await Member.countDocuments();
+
+    if (totalMembers === 0) {
+      return res.status(404).json({
+        message: "No members available for draw",
+        showMessage: true,
+      });
+    }
+
+    // Get a random member
+    const randomIndex = Math.floor(Math.random() * totalMembers);
+    const randomMember = await Member.findOne().skip(randomIndex);
+
+    if (!randomMember) {
+      return res.status(404).json({
+        message: "Failed to select random member",
+        showMessage: true,
+      });
+    }
+
+    // Create a draw record (optional - you can log this to track draws)
+    const drawRecord = {
+      memberId: randomMember._id,
+      memberName: randomMember.name,
+      fileNo: randomMember.fileNo,
+      drawTime: new Date(),
+      totalParticipants: totalMembers,
+    };
+
+    console.log("Lucky Draw Winner:", drawRecord);
+
+    res.status(200).json({
+      success: true,
+      winner: {
+        _id: randomMember._id,
+        name: randomMember.name,
+        fatherName: randomMember.fatherName,
+        gender: randomMember.gender,
+        dob: randomMember.dob,
+        mobile: randomMember.mobile,
+        email: randomMember.email,
+        cnic: randomMember.cnic,
+        fileNo: randomMember.fileNo,
+        feesVoucher: randomMember.feesVoucher,
+        bmVerification: randomMember.bmVerification,
+        createdAt: randomMember.createdAt,
+        age: Math.floor(
+          (new Date() - new Date(randomMember.dob)) /
+            (365.25 * 24 * 60 * 60 * 1000)
+        ),
+      },
+      drawInfo: {
+        totalParticipants: totalMembers,
+        drawTime: new Date(),
+        drawId: `DRAW-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      },
+    });
+  } catch (error) {
+    console.error("Lucky draw error:", error);
+    res.status(500).json({
+      message: "Server Error during lucky draw",
+      showMessage: true,
     });
   }
 };
@@ -239,5 +311,6 @@ module.exports = {
   getMemberById,
   addMember,
   updateMember,
-  deleteMember 
+  deleteMember,
+  getRandomMember,
 };
