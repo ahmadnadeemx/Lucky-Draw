@@ -55,8 +55,7 @@ const Home = () => {
       // Start the API call immediately but store the promise
       const drawPromise = performLuckyDraw();
 
-      // Let the countdown animation run its course (7 seconds for 7-0 countdown)
-      const countdownDuration = 7000; // 7 seconds for 7-0 countdown
+      const countdownDuration = 15000;
 
       // Create a timeout that will complete after countdown
       const countdownTimeout = setTimeout(async () => {
