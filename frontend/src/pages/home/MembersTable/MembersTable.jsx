@@ -529,8 +529,8 @@ const MembersTable = ({
 
                       {/* Actions Column */}
                       <td className="bg-white dark:bg-gray-800 group-hover:bg-blue-50 dark:group-hover:bg-gray-700/50 p-4 border-l border-gray-100 dark:border-gray-700">
-                        <div className="flex flex-col md:flex-row items-center justify-center gap-3">
-                          <div className="flex items-center justify-between w-full gap-2">
+                        <div className="flex justify-center">
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 place-items-center">
                             {/* View Button */}
                             <motion.button
                               whileHover={{ scale: 1.1, rotate: 5 }}
@@ -550,83 +550,33 @@ const MembersTable = ({
                               whileHover={{ scale: 1.1, rotate: -5 }}
                               whileTap={{ scale: 0.9 }}
                               onClick={(e) => handlePrintClick(member, e)}
-                              className="h-10 w-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 transition-all md:hidden"
+                              className="h-10 w-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 transition-all"
                               title="Print Invoice"
                             >
                               <FaPrint className="h-4 w-4 text-white" />
                             </motion.button>
 
-                            {/* Desktop: All buttons in row */}
-                            <div className="hidden md:flex items-center gap-2">
-                              {/* Print Button */}
-                              <motion.button
-                                whileHover={{ scale: 1.1, rotate: -5 }}
-                                whileTap={{ scale: 0.9 }}
-                                onClick={(e) => handlePrintClick(member, e)}
-                                className="h-10 w-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 transition-all"
-                                title="Print Invoice"
-                              >
-                                <FaPrint className="h-4 w-4 text-white" />
-                              </motion.button>
+                            {/* Edit Button */}
+                            <motion.button
+                              whileHover={{ scale: 1.1, rotate: -5 }}
+                              whileTap={{ scale: 0.9 }}
+                              onClick={(e) => handleEditClick(member, e)}
+                              className="h-10 w-10 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-green-500/30 hover:shadow-green-500/50 transition-all"
+                              title="Edit"
+                            >
+                              <FaEdit className="h-4 w-4 text-white" />
+                            </motion.button>
 
-                              {/* Edit Button */}
-                              <motion.button
-                                whileHover={{ scale: 1.1, rotate: -5 }}
-                                whileTap={{ scale: 0.9 }}
-                                onClick={(e) => handleEditClick(member, e)}
-                                className="h-10 w-10 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-green-500/30 hover:shadow-green-500/50 transition-all"
-                                title="Edit"
-                              >
-                                <FaEdit className="h-4 w-4 text-white" />
-                              </motion.button>
-
-                              {/* Delete Button */}
-                              <motion.button
-                                whileHover={{ scale: 1.1, rotate: 5 }}
-                                whileTap={{ scale: 0.9 }}
-                                onClick={(e) => handleDeleteClick(member, e)}
-                                className="h-10 w-10 rounded-full bg-gradient-to-r from-red-500 to-rose-500 flex items-center justify-center shadow-lg shadow-red-500/30 hover:shadow-red-500/50 transition-all"
-                                title="Delete"
-                              >
-                                <FaTrash className="h-4 w-4 text-white" />
-                              </motion.button>
-                            </div>
-
-                            {/* Mobile: Print, Edit, Delete buttons stacked */}
-                            <div className="flex md:hidden flex-col items-center gap-2">
-                              {/* Print Button */}
-                              <motion.button
-                                whileHover={{ scale: 1.1, rotate: -5 }}
-                                whileTap={{ scale: 0.9 }}
-                                onClick={(e) => handlePrintClick(member, e)}
-                                className="h-10 w-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 transition-all"
-                                title="Print Invoice"
-                              >
-                                <FaPrint className="h-4 w-4 text-white" />
-                              </motion.button>
-
-                              {/* Edit Button */}
-                              <motion.button
-                                whileHover={{ scale: 1.1, rotate: -5 }}
-                                whileTap={{ scale: 0.9 }}
-                                onClick={(e) => handleEditClick(member, e)}
-                                className="h-10 w-10 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-green-500/30 hover:shadow-green-500/50 transition-all"
-                                title="Edit"
-                              >
-                                <FaEdit className="h-4 w-4 text-white" />
-                              </motion.button>
-
-                              {/* Delete Button */}
-                              <motion.button
-                                whileHover={{ scale: 1.1, rotate: 5 }}
-                                whileTap={{ scale: 0.9 }}
-                                onClick={(e) => handleDeleteClick(member, e)}
-                                className="h-10 w-10 rounded-full bg-gradient-to-r from-red-500 to-rose-500 flex items-center justify-center shadow-lg shadow-red-500/30 hover:shadow-red-500/50 transition-all"
-                                title="Delete"
-                              >
-                                <FaTrash className="h-4 w-4 text-white" />
-                              </motion.button>
-                            </div>
+                            {/* Delete Button */}
+                            <motion.button
+                              whileHover={{ scale: 1.1, rotate: 5 }}
+                              whileTap={{ scale: 0.9 }}
+                              onClick={(e) => handleDeleteClick(member, e)}
+                              className="h-10 w-10 rounded-full bg-gradient-to-r from-red-500 to-rose-500 flex items-center justify-center shadow-lg shadow-red-500/30 hover:shadow-red-500/50 transition-all"
+                              title="Delete"
+                            >
+                              <FaTrash className="h-4 w-4 text-white" />
+                            </motion.button>
                           </div>
                         </div>
                       </td>
