@@ -1,9 +1,9 @@
 import React, { useRef } from "react";
 import {
-  FaPrint,
   FaTimes,
   FaDownload,
-  FaShare,
+  FaFilePdf,
+  FaImage,
   FaCalendarAlt,
   FaPhone,
   FaEnvelope,
@@ -47,86 +47,163 @@ const PrintInvoice = ({ member, isOpen, onClose }) => {
     return age;
   };
 
-  // Download as PDF
-  const downloadAsPDF = () => {
+  // Download as PDF (A4 size, single page)
+  const downloadAsPDF = async () => {
     const input = invoiceRef.current;
-    html2canvas(input, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: "#ffffff",
-    }).then((canvas) => {
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF("p", "mm", "a4");
-      const imgWidth = 210;
-      const pageHeight = 295;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 0;
-
-      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
+    
+    try {
+      // Set loading state
+      const downloadBtn = document.querySelector('[data-download="pdf"]');
+      if (downloadBtn) {
+        downloadBtn.disabled = true;
+        downloadBtn.innerHTML = '<span class="animate-spin">⏳</span> Generating PDF...';
       }
 
-      pdf.save(`${member.serialNo}_${member.name}_Invoice.pdf`);
-    });
-  };
-
-  // Share as Image
-  const shareAsImage = () => {
-    const input = invoiceRef.current;
-    html2canvas(input, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: "#ffffff",
-    }).then((canvas) => {
-      canvas.toBlob((blob) => {
-        const file = new File([blob], `${member.serialNo}_invoice.png`, {
-          type: "image/png",
-        });
-
-        if (navigator.share && navigator.canShare({ files: [file] })) {
-          navigator.share({
-            title: `Invoice - ${member.name}`,
-            text: `Invoice for ${member.name} - Serial No: ${member.serialNo}`,
-            files: [file],
-          });
-        } else {
-          const link = document.createElement("a");
-          link.download = `${member.serialNo}_${member.name}_Invoice.png`;
-          link.href = canvas.toDataURL();
-          link.click();
+      // Capture the invoice with high quality
+      const canvas = await html2canvas(input, {
+        scale: 3, // Higher scale for better quality
+        useCORS: true,
+        backgroundColor: "#ffffff",
+        logging: false,
+        allowTaint: true,
+        removeContainer: true,
+        width: input.scrollWidth,
+        height: input.scrollHeight,
+        windowWidth: input.scrollWidth,
+        windowHeight: input.scrollHeight,
+        onclone: (clonedDoc) => {
+          // Remove any buttons or interactive elements from the clone
+          const buttons = clonedDoc.querySelectorAll('.no-print, button');
+          buttons.forEach(btn => btn.style.display = 'none');
         }
       });
-    });
+
+      // Create PDF
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+
+      // Calculate aspect ratio
+      const canvasWidth = canvas.width;
+      const canvasHeight = canvas.height;
+      const aspectRatio = canvasWidth / canvasHeight;
+
+      // Calculate dimensions to fit on A4
+      let imgWidth = pageWidth - 20; // 10mm margin on each side
+      let imgHeight = imgWidth / aspectRatio;
+
+      // If image is too tall, reduce width to maintain aspect ratio
+      if (imgHeight > pageHeight - 20) {
+        imgHeight = pageHeight - 20;
+        imgWidth = imgHeight * aspectRatio;
+      }
+
+      // Calculate centering position
+      const xOffset = (pageWidth - imgWidth) / 2;
+      const yOffset = (pageHeight - imgHeight) / 2;
+
+      // Convert canvas to image
+      const imgData = canvas.toDataURL('image/png', 1.0);
+
+      // Add image to PDF
+      pdf.addImage(imgData, 'PNG', xOffset, yOffset, imgWidth, imgHeight);
+
+      // Add footer text
+      pdf.setFontSize(8);
+      pdf.setTextColor(100);
+      pdf.text(
+        `Invoice: ${member.serialNo} | Generated: ${new Date().toLocaleDateString()} | SS Builder & Prop Interior`,
+        pageWidth / 2,
+        pageHeight - 5,
+        { align: 'center' }
+      );
+
+      // Save PDF
+      pdf.save(`${member.serialNo}_${member.name.replace(/\s+/g, '_')}_Invoice.pdf`);
+
+    } catch (error) {
+      console.error('PDF generation error:', error);
+      alert('Failed to generate PDF. Please try again.');
+    } finally {
+      // Reset button state
+      const downloadBtn = document.querySelector('[data-download="pdf"]');
+      if (downloadBtn) {
+        downloadBtn.disabled = false;
+        downloadBtn.innerHTML = '<FaFilePdf className="h-4 w-4" /><span class="hidden md:inline">PDF</span>';
+      }
+    }
   };
 
-  // Print the invoice
-  const handlePrint = () => {
-    const printContent = invoiceRef.current.innerHTML;
-    const originalContent = document.body.innerHTML;
+  // Download as Image
+  const downloadAsImage = async () => {
+    const input = invoiceRef.current;
+    
+    try {
+      // Set loading state
+      const downloadBtn = document.querySelector('[data-download="image"]');
+      if (downloadBtn) {
+        downloadBtn.disabled = true;
+        downloadBtn.innerHTML = '<span class="animate-spin">⏳</span> Generating Image...';
+      }
 
-    document.body.innerHTML = printContent;
-    window.print();
-    document.body.innerHTML = originalContent;
-    window.location.reload();
+      // Capture the invoice
+      const canvas = await html2canvas(input, {
+        scale: 2, // Good quality for images
+        useCORS: true,
+        backgroundColor: "#ffffff",
+        logging: false,
+        allowTaint: true,
+        width: input.scrollWidth,
+        height: input.scrollHeight,
+        windowWidth: input.scrollWidth,
+        windowHeight: input.scrollHeight,
+        onclone: (clonedDoc) => {
+          // Remove any buttons or interactive elements from the clone
+          const buttons = clonedDoc.querySelectorAll('.no-print, button');
+          buttons.forEach(btn => btn.style.display = 'none');
+        }
+      });
+
+      // Create download link
+      const link = document.createElement('a');
+      const fileName = `${member.serialNo}_${member.name.replace(/\s+/g, '_')}_Invoice.png`;
+      
+      link.download = fileName;
+      link.href = canvas.toDataURL('image/png');
+      
+      // Trigger download
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+    } catch (error) {
+      console.error('Image generation error:', error);
+      alert('Failed to generate image. Please try again.');
+    } finally {
+      // Reset button state
+      const downloadBtn = document.querySelector('[data-download="image"]');
+      if (downloadBtn) {
+        downloadBtn.disabled = false;
+        downloadBtn.innerHTML = '<FaImage className="h-4 w-4" /><span class="hidden md:inline">Image</span>';
+      }
+    }
   };
 
   return (
     <>
-      {/* Print Invoice Modal */}
+      {/* Invoice Modal */}
       <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[100] flex items-center justify-center p-4 overflow-y-auto">
         <div className="bg-white rounded-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden shadow-2xl">
           {/* Modal Header */}
           <div className="flex justify-between items-center p-6 border-b bg-gradient-to-r from-blue-600 to-cyan-600">
             <div className="flex items-center gap-3">
               <div className="h-12 w-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                <FaPrint className="h-6 w-6 text-white" />
+                <FaFilePdf className="h-6 w-6 text-white" />
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-white">
@@ -138,29 +215,29 @@ const PrintInvoice = ({ member, isOpen, onClose }) => {
               </div>
             </div>
             <div className="flex items-center gap-3">
+              {/* Download PDF Button */}
               <button
                 onClick={downloadAsPDF}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 transition-colors"
-                title="Download PDF"
+                data-download="pdf"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Download as PDF"
               >
-                <FaDownload className="h-4 w-4" />
+                <FaFilePdf className="h-4 w-4" />
                 <span className="hidden md:inline">PDF</span>
               </button>
+              
+              {/* Download Image Button */}
               <button
-                onClick={shareAsImage}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 transition-colors"
-                title="Share as Image"
+                onClick={downloadAsImage}
+                data-download="image"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Download as Image"
               >
-                <FaShare className="h-4 w-4" />
-                <span className="hidden md:inline">Share</span>
+                <FaImage className="h-4 w-4" />
+                <span className="hidden md:inline">Image</span>
               </button>
-              <button
-                onClick={handlePrint}
-                className="flex items-center gap-2 px-6 py-2 rounded-lg bg-white text-blue-600 font-semibold hover:bg-gray-100 transition-colors shadow-lg"
-              >
-                <FaPrint className="h-4 w-4" />
-                Print Now
-              </button>
+              
+              {/* Close Button */}
               <button
                 onClick={onClose}
                 className="h-10 w-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/30 transition-colors"
@@ -170,19 +247,21 @@ const PrintInvoice = ({ member, isOpen, onClose }) => {
             </div>
           </div>
 
-          {/* Invoice Preview */}
+          {/* Invoice Preview Container */}
           <div className="p-6 overflow-y-auto max-h-[calc(90vh-100px)]">
             <div
               ref={invoiceRef}
-              className="bg-white p-8 rounded-lg border-2 border-gray-200 shadow-inner print:shadow-none print:border-none"
+              className="bg-white p-8 rounded-lg border-2 border-gray-200 shadow-inner"
               style={{
-                width: "210mm",
-                minHeight: "297mm",
+                width: "210mm", // A4 width in mm
+                minHeight: "297mm", // A4 height in mm
                 margin: "0 auto",
                 fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-                backgroundColor: "#fefefe",
+                backgroundColor: "#ffffff",
                 position: "relative",
                 overflow: "hidden",
+                boxSizing: "border-box",
+                pageBreakInside: "avoid",
               }}
             >
               {/* Decorative Elements */}
@@ -194,12 +273,12 @@ const PrintInvoice = ({ member, isOpen, onClose }) => {
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      <div className="h-12 w-12 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-lg flex items-center justify-center">
+                      <div className="h-12 w-12 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-lg flex items-center justify-center -mt-5 -mr-1">
                         <span className="text-white font-bold text-xl">SS</span>
                       </div>
                       <div>
                         <h1 className="text-3xl font-bold text-gray-900 mb-1">
-                          SS Builder & Prop Interior
+                          Builder & Prop Interior
                         </h1>
                         <p className="text-sm text-gray-600 font-medium">
                           Professional Construction & Interior Solutions
@@ -223,15 +302,16 @@ const PrintInvoice = ({ member, isOpen, onClose }) => {
                     </div>
                   </div>
 
-                  {/* User Image in Upper Right Corner - Professional Placement */}
+                  {/* User Image in Upper Right Corner */}
                   <div className="w-32 h-32 relative">
                     <div className="absolute -top-2 -right-2 w-36 h-36 flex items-center justify-center">
-                      <div className="w-full h-full overflow-hidden ">
+                      <div className="w-full h-full overflow-hidden border-4 border-white shadow-lg rounded-full">
                         {member.memberImage ? (
                           <img
                             src={member.memberImage}
                             alt={member.name}
                             className="w-full h-full object-cover"
+                            crossOrigin="anonymous"
                           />
                         ) : (
                           <div className="w-full h-full flex flex-col items-center justify-center p-2">
@@ -266,8 +346,8 @@ const PrintInvoice = ({ member, isOpen, onClose }) => {
                 </div>
               </div>
 
-              {/* Main Content */}
-              <div className="mb-8 relative">
+              {/* Main Content - Optimized for single page */}
+              <div className="mb-8 relative" style={{ pageBreakInside: 'avoid' }}>
                 {/* Key Information Cards */}
                 <div className="grid grid-cols-3 gap-4 mb-8">
                   <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-4 shadow-sm">
@@ -545,22 +625,18 @@ const PrintInvoice = ({ member, isOpen, onClose }) => {
                 {/* Footer */}
                 <div className="mt-10 pt-6 border-t-2 border-gray-300 text-center">
                   <div className="text-xs text-gray-600 mb-2">
-                    <p>
+                    {/* <p>
                       This is an electronically generated invoice. No physical
                       signature required for validation.
-                    </p>
-                    <p className="mt-1">
+                    </p> */}
+                    {/* <p className="mt-1">
                       Invoice Generated on: {new Date().toLocaleString()}
-                    </p>
+                    </p> */}
                   </div>
                   <div className="bg-gradient-to-r from-gray-100 to-gray-50 p-4 rounded-lg mt-4">
                     <p className="text-sm font-semibold text-gray-800">
                       Thank you for registering with SS Builder & Prop Interior
                       Lucky Draw!
-                    </p>
-                    <p className="text-xs text-gray-600 mt-1">
-                      For any queries, contact: info@ssbuilder.com | +92 300
-                      1234567
                     </p>
                   </div>
                 </div>
@@ -569,44 +645,11 @@ const PrintInvoice = ({ member, isOpen, onClose }) => {
           </div>
         </div>
       </div>
-
-      {/* Print Styles */}
-      <style jsx>{`
-        @media print {
-          body * {
-            visibility: hidden;
-          }
-          #print-area,
-          #print-area * {
-            visibility: visible;
-          }
-          #print-area {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            box-shadow: none !important;
-            border: none !important;
-          }
-          .no-print {
-            display: none !important;
-          }
-        }
-
-        @page {
-          margin: 0;
-          size: A4;
-        }
-      `}</style>
     </>
   );
 };
 
 export default PrintInvoice;
-
-
-
-
 
 
 

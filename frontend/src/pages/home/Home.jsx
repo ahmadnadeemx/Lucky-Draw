@@ -360,7 +360,7 @@ const Home = () => {
           className="my-12 text-center relative"
         >
           {/* Lucky Draw Stamp */}
-          <motion.div
+          {/* <motion.div
             initial={{ scale: 0, rotate: -180 }}
             animate={{ scale: 1, rotate: 0 }}
             transition={{
@@ -390,7 +390,7 @@ const Home = () => {
                 className="absolute inset-0 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 rounded-full blur-xl"
               />
             </div>
-          </motion.div>
+          </motion.div> */}
 
           {/* Another stamp on the other side for balance */}
           <motion.div
