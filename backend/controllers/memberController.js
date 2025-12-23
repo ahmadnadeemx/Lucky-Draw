@@ -1,307 +1,211 @@
-// controllers/memberController.js
+const Member = require('../models/Member');
+const { uploadMiddleware } = require('../middleware/uploadMiddleware');
 
-const Member = require("../models/Member");
-
-// @desc    Get all members
-// @route   GET /api/members
-// @access  Public
+// Get all members
 const getAllMembers = async (req, res) => {
   try {
-    const members = await Member.find().sort({ createdAt: -1 });
-    res.status(200).json(members);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server Error" });
-  }
-};
-
-// @desc    Get single member by ID
-// @route   GET /api/members/:id
-// @access  Public
-const getMemberById = async (req, res) => {
-  try {
-    const member = await Member.findById(req.params.id);
-    if (!member) {
-      return res.status(404).json({ message: "Member not found" });
-    }
-    res.status(200).json(member);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server Error" });
-  }
-};
-
-// @desc    Add new member
-// @route   POST /api/members
-// @access  Public
-const addMember = async (req, res) => {
-  try {
-    const {
-      fileNo,
-      name,
-      fatherName,
-      cnic,
-      gender,
-      dob,
-      bmVerification,
-      feesVoucher,
-      email,
-      mobile,
-    } = req.body;
-
-    // Check for duplicate CNIC or fileNo
-    const existingMember = await Member.findOne({
-      $or: [{ cnic }, { fileNo }],
-    });
-    if (existingMember) {
-      return res.status(400).json({
-        message: "Member with this CNIC or File No already exists",
-        showMessage: true,
-      });
-    }
-
-    const newMember = new Member({
-      fileNo,
-      name,
-      fatherName,
-      cnic,
-      gender,
-      dob,
-      bmVerification,
-      feesVoucher,
-      email,
-      mobile,
-    });
-
-    const savedMember = await newMember.save();
-    res.status(201).json(savedMember);
+    const members = await Member.find().sort({ serialNo: 1 });
+    res.json(members);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server Error", showMessage: true });
   }
 };
 
-// @desc    Update existing member
-// @route   PUT /api/members/:id
-// @access  Public
-const updateMember = async (req, res) => {
+// Get member by ID
+const getMemberById = async (req, res) => {
   try {
-    const { id } = req.params;
+    const member = await Member.findById(req.params.id);
+    if (!member) {
+      return res.status(404).json({ message: "Member not found" });
+    }
+    res.json(member);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server Error", showMessage: true });
+  }
+};
+
+// Add new member (with image upload)
+const addMember = async (req, res) => {
+  try {
     const {
+      serialNo,
       fileNo,
       name,
       fatherName,
       cnic,
       gender,
       dob,
-      bmVerification,
-      feesVoucher,
+      membership,
+      bmVerification = false,
+      feesVoucherText,
       email,
       mobile,
+      memberImage,
+      feesVoucherImage
     } = req.body;
 
-    // Find the member to update
-    let member = await Member.findById(id);
-    if (!member) {
-      return res.status(404).json({
-        message: "Member not found",
-        showMessage: true,
+    // Check for required fields
+    if (!memberImage || !feesVoucherImage) {
+      return res.status(400).json({
+        message: "Member image and voucher image are required",
+        showMessage: true
       });
     }
 
-    // Check for duplicate CNIC or fileNo (excluding the current member)
+    // Check for duplicates
     const existingMember = await Member.findOne({
-      $and: [
-        { _id: { $ne: id } }, // Not the current member
-        { $or: [{ cnic }, { fileNo }] },
-      ],
+      $or: [
+        { serialNo },
+        { fileNo },
+        { cnic },
+        { email }
+      ]
     });
 
     if (existingMember) {
+      let duplicateField = '';
+      if (existingMember.serialNo === serialNo) duplicateField = 'Serial No';
+      else if (existingMember.fileNo === fileNo) duplicateField = 'File No';
+      else if (existingMember.cnic === cnic) duplicateField = 'CNIC';
+      else duplicateField = 'Email';
+      
       return res.status(400).json({
-        message: "Another member with this CNIC or File No already exists",
+        message: `${duplicateField} already exists`,
         showMessage: true,
       });
     }
 
-    // Update member fields
-    member.fileNo = fileNo || member.fileNo;
-    member.name = name || member.name;
-    member.fatherName = fatherName || member.fatherName;
-    member.cnic = cnic || member.cnic;
-    member.gender = gender || member.gender;
-    member.dob = dob || member.dob;
-    member.bmVerification =
-      bmVerification !== undefined ? bmVerification : member.bmVerification;
-    member.feesVoucher = feesVoucher || member.feesVoucher;
-    member.email = email || member.email;
-    member.mobile = mobile || member.mobile;
-
-    // Update the updatedAt timestamp
-    member.updatedAt = Date.now();
-
-    const updatedMember = await member.save();
-
-    res.status(200).json({
-      _id: updatedMember._id,
-      fileNo: updatedMember.fileNo,
-      name: updatedMember.name,
-      fatherName: updatedMember.fatherName,
-      cnic: updatedMember.cnic,
-      gender: updatedMember.gender,
-      dob: updatedMember.dob,
-      bmVerification: updatedMember.bmVerification,
-      feesVoucher: updatedMember.feesVoucher,
-      email: updatedMember.email,
-      mobile: updatedMember.mobile,
-      createdAt: updatedMember.createdAt,
-      updatedAt: updatedMember.updatedAt,
+    const newMember = new Member({
+      serialNo,
+      fileNo,
+      name,
+      fatherName,
+      cnic,
+      gender,
+      dob: dob ? new Date(dob) : null,
+      membership,
+      bmVerification: bmVerification === true || bmVerification === 'true',
+      feesVoucherText,
+      feesVoucherImage,
+      memberImage,
+      email,
+      mobile,
     });
+
+    const savedMember = await newMember.save();
+    
+    // Format response
+    const responseMember = savedMember.toObject();
+    responseMember.age = savedMember.age; // Add virtual field
+    
+    res.status(201).json({
+      success: true,
+      message: "Member added successfully",
+      member: responseMember
+    });
+    
   } catch (error) {
-    console.error("Update member error:", error);
-
-    // Handle validation errors
-    if (error.name === "ValidationError") {
-      return res.status(400).json({
-        message: "Validation Error",
-        details: error.message,
-        showMessage: true,
-      });
-    }
-
-    // Handle cast errors (invalid ID format)
-    if (error.name === "CastError") {
-      return res.status(400).json({
-        message: "Invalid member ID format",
-        showMessage: true,
-      });
-    }
-
-    res.status(500).json({
-      message: "Server Error",
+    console.error('Add member error:', error);
+    
+    res.status(500).json({ 
+      message: "Server Error", 
       showMessage: true,
+      error: error.message 
     });
   }
 };
 
-// @desc    Delete a member
-// @route   DELETE /api/members/:id
-// @access  Public
-const deleteMember = async (req, res) => {
+// Update existing member
+const updateMember = async (req, res) => {
   try {
     const { id } = req.params;
-
-    // Find the member to delete
-    const member = await Member.findById(id);
-    if (!member) {
-      return res.status(404).json({
-        message: "Member not found",
-        showMessage: true,
-      });
+    const updateData = { ...req.body };
+    
+    // Convert date string to Date object
+    if (updateData.dob) {
+      updateData.dob = new Date(updateData.dob);
     }
-
-    // Store member info for response before deletion
-    const deletedMemberInfo = {
-      _id: member._id,
-      name: member.name,
-      fileNo: member.fileNo,
-      cnic: member.cnic,
-    };
-
-    // Delete the member
-    await Member.findByIdAndDelete(id);
-
-    res.status(200).json({
-      message: "Member deleted successfully",
-      deletedMember: deletedMemberInfo,
-      showMessage: true,
+    
+    // Convert boolean strings to actual booleans
+    if (updateData.bmVerification !== undefined) {
+      updateData.bmVerification = updateData.bmVerification === true || 
+                                 updateData.bmVerification === 'true';
+    }
+    
+    const updatedMember = await Member.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true, runValidators: true }
+    );
+    
+    if (!updatedMember) {
+      return res.status(404).json({ message: "Member not found" });
+    }
+    
+    res.json({
+      success: true,
+      message: "Member updated successfully",
+      member: updatedMember
     });
+    
   } catch (error) {
-    console.error("Delete member error:", error);
-
-    // Handle cast errors (invalid ID format)
-    if (error.name === "CastError") {
-      return res.status(400).json({
-        message: "Invalid member ID format",
-        showMessage: true,
-      });
-    }
-
-    res.status(500).json({
-      message: "Server Error",
-      showMessage: true,
-    });
+    console.error(error);
+    res.status(500).json({ message: "Server Error", showMessage: true });
   }
 };
 
-// @desc    Get random member for lucky draw
-// @route   GET /api/members/draw/random
-// @access  Public
+// Delete member
+const deleteMember = async (req, res) => {
+  try {
+    const member = await Member.findById(req.params.id);
+    
+    if (!member) {
+      return res.status(404).json({ message: "Member not found" });
+    }
+    
+    await member.deleteOne();
+    
+    res.json({
+      success: true,
+      message: "Member deleted successfully"
+    });
+    
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server Error", showMessage: true });
+  }
+};
+
+// Get random member for lucky draw
 const getRandomMember = async (req, res) => {
   try {
-    // Get total count of members
-    const totalMembers = await Member.countDocuments();
-
-    if (totalMembers === 0) {
+    // Get only verified members for draw
+    const verifiedMembers = await Member.find({ bmVerification: true });
+    
+    if (verifiedMembers.length === 0) {
       return res.status(404).json({
-        message: "No members available for draw",
-        showMessage: true,
+        success: false,
+        message: "No verified members available for draw"
       });
     }
-
-    // Get a random member
-    const randomIndex = Math.floor(Math.random() * totalMembers);
-    const randomMember = await Member.findOne().skip(randomIndex);
-
-    if (!randomMember) {
-      return res.status(404).json({
-        message: "Failed to select random member",
-        showMessage: true,
-      });
-    }
-
-    // Create a draw record (optional - you can log this to track draws)
-    const drawRecord = {
-      memberId: randomMember._id,
-      memberName: randomMember.name,
-      fileNo: randomMember.fileNo,
-      drawTime: new Date(),
-      totalParticipants: totalMembers,
-    };
-
-    console.log("Lucky Draw Winner:", drawRecord);
-
-    res.status(200).json({
+    
+    // Select random member
+    const randomIndex = Math.floor(Math.random() * verifiedMembers.length);
+    const winner = verifiedMembers[randomIndex];
+    
+    res.json({
       success: true,
-      winner: {
-        _id: randomMember._id,
-        name: randomMember.name,
-        fatherName: randomMember.fatherName,
-        gender: randomMember.gender,
-        dob: randomMember.dob,
-        mobile: randomMember.mobile,
-        email: randomMember.email,
-        cnic: randomMember.cnic,
-        fileNo: randomMember.fileNo,
-        feesVoucher: randomMember.feesVoucher,
-        bmVerification: randomMember.bmVerification,
-        createdAt: randomMember.createdAt,
-        age: Math.floor(
-          (new Date() - new Date(randomMember.dob)) /
-            (365.25 * 24 * 60 * 60 * 1000)
-        ),
-      },
-      drawInfo: {
-        totalParticipants: totalMembers,
-        drawTime: new Date(),
-        drawId: `DRAW-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      },
+      message: "Lucky draw completed successfully!",
+      winner: winner
     });
+    
   } catch (error) {
-    console.error("Lucky draw error:", error);
+    console.error(error);
     res.status(500).json({
-      message: "Server Error during lucky draw",
-      showMessage: true,
+      success: false,
+      message: "Server Error during draw"
     });
   }
 };
@@ -313,4 +217,5 @@ module.exports = {
   updateMember,
   deleteMember,
   getRandomMember,
+  uploadMiddleware
 };

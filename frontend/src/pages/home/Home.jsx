@@ -358,16 +358,83 @@ const Home = () => {
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.3 }}
-          className="my-12 text-center"
+          className="my-12 text-center relative"
         >
-          <div className="max-w-4xl mx-auto">
+          {/* Lucky Draw Stamp */}
+          <motion.div
+            initial={{ scale: 0, rotate: -180 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{
+              type: "spring",
+              stiffness: 200,
+              damping: 15,
+              delay: 0.5,
+            }}
+            className="absolute -top-10 left-1/2 -translate-x-1/2 md:left-1/4 md:translate-x-0 md:top-1/4 z-0 pointer-events-none"
+          >
+            <div className="relative">
+              <img
+                src="/images/luckydrawstemp.png"
+                alt="Lucky Draw Stamp"
+                className="w-32 h-32 md:w-55 md:h-55 opacity-90 drop-shadow-2xl animate-pulse-slow"
+              />
+              <motion.div
+                animate={{
+                  scale: [1, 1.1, 1],
+                  rotate: [0, 5, -5, 0],
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  repeatType: "reverse",
+                }}
+                className="absolute inset-0 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 rounded-full blur-xl"
+              />
+            </div>
+          </motion.div>
+
+          {/* Another stamp on the other side for balance */}
+          <motion.div
+            initial={{ scale: 0, rotate: 180 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{
+              type: "spring",
+              stiffness: 200,
+              damping: 15,
+              delay: 0.7,
+            }}
+            className="absolute -top-10 right-1/2 translate-x-1/2 md:right-1/4 md:translate-x-0 md:top-1/4 z-0 pointer-events-none"
+          >
+            <div className="relative">
+              {/* <img
+                src="/images/luckydrawstemp.png"
+                alt="Lucky Draw Stamp"
+                className="w-28 h-28 md:w-40 md:h-40 opacity-80 drop-shadow-2xl animate-pulse-slow rotate-12"
+              /> */}
+              <motion.div
+                animate={{
+                  scale: [1, 1.05, 1],
+                  rotate: [0, -3, 3, 0],
+                }}
+                transition={{
+                  duration: 2.5,
+                  repeat: Infinity,
+                  repeatType: "reverse",
+                  delay: 0.5,
+                }}
+                className="absolute inset-0 bg-gradient-to-l from-amber-500/20 to-yellow-500/20 rounded-full blur-lg"
+              />
+            </div>
+          </motion.div>
+
+          <div className="max-w-4xl mx-auto relative z-10">
             <div className="mb-8">
               <h2 className="text-4xl md:text-5xl font-bold mb-4">
                 🎉{" "}
-                <span className=" bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 bg-clip-text text-transparent">
-                  GRAND LUCKY DRAW
+                <span className="bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 bg-clip-text text-transparent">
+                  SS Build And Prop Interior
                 </span>
-                🎉
+                <span className="inline-block rotate-[270deg]">🎉</span>
               </h2>
               <p className="text-gray-600 dark:text-gray-400 text-lg mb-6">
                 Click the button below to randomly select one lucky winner from{" "}
@@ -386,7 +453,7 @@ const Home = () => {
                   </p>
                 </div>
               ) : (
-                <div className="text-center p-8 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-2xl">
+                <div className="text-center p-8 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-2xl relative z-10">
                   <p className="text-xl text-gray-600 dark:text-gray-400">
                     Add participants first to start the lucky draw!
                   </p>
@@ -394,6 +461,20 @@ const Home = () => {
               )}
             </div>
           </div>
+
+          {/* Floating stamp at the bottom for more decoration */}
+          <motion.div
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 0.7 }}
+            transition={{ delay: 1 }}
+            className="absolute -bottom-20 left-1/2 -translate-x-1/2 z-0 pointer-events-none"
+          >
+            {/* <img
+              src="/images/luckydrawstemp.png"
+              alt="Lucky Draw Stamp"
+              className="w-24 h-24 opacity-70 blur-[1px]"
+            /> */}
+          </motion.div>
         </motion.div>
       )}
       {/* Header Section */}
@@ -663,15 +744,7 @@ const Home = () => {
         pendingMembers={pendingMembers}
       />
 
-      {/* Member Detail Modal */}
-      <AnimatePresence>
-        {selectedMember && (
-          <MemberDetailModal
-            member={selectedMember}
-            onClose={() => setSelectedMember(null)}
-          />
-        )}
-      </AnimatePresence>
+     
       {/* Add Member Modal */}
       <AddMemberModal
         isOpen={showAddMemberModal}
@@ -703,22 +776,7 @@ const Home = () => {
         totalParticipants={totalMembers}
       />
 
-      {/* Add Member Modal */}
-      <AddMemberModal
-        isOpen={showAddMemberModal}
-        onClose={() => setShowAddMemberModal(false)}
-        onMemberAdded={handleMemberAdded}
-      />
 
-      {/* Member Detail Modal */}
-      <AnimatePresence>
-        {selectedMember && (
-          <MemberDetailModal
-            member={selectedMember}
-            onClose={() => setSelectedMember(null)}
-          />
-        )}
-      </AnimatePresence>
     </div>
   );
 };

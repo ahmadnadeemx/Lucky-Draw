@@ -203,7 +203,7 @@ const WinnerResultModal = ({ isOpen, onClose, winnerData, totalParticipants }) =
                         transition={{ delay: 0.3 }}
                         className="text-2xl md:text-3xl font-bold text-white px-2"
                       >
-                        🎉 CONGRATULATIONS! 🎉
+                        🎉 CONGRATULATIONS! <span className='inline-block rotate-[270deg]'>🎉</span>
                       </motion.h2>
                       <motion.p
                         initial={{ y: 20, opacity: 0 }}

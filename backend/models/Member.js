@@ -1,8 +1,13 @@
-// models/Member.js
-
 const mongoose = require('mongoose');
 
 const memberSchema = new mongoose.Schema({
+  serialNo: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true,
+    uppercase: true
+  },
   fileNo: {
     type: String,
     required: true,
@@ -34,28 +39,59 @@ const memberSchema = new mongoose.Schema({
     type: Date,
     required: true
   },
+  membership: {
+    type: String,
+    required: true,
+    trim: true,
+  },
   bmVerification: {
     type: Boolean,
-    default: false // default false, can be updated after verification
+    default: false
   },
-  feesVoucher: {
+  feesVoucherText: {
     type: String,
     required: true,
     trim: true
+  },
+  feesVoucherImage: {
+    type: String,
+    required: true
+  },
+  memberImage: {
+    type: String,
+    required: true
   },
   email: {
     type: String,
     required: true,
     lowercase: true,
-    trim: true,
-    match: /^\S+@\S+\.\S+$/ // basic email validation
+    trim: true
   },
   mobile: {
     type: String,
     required: true,
-    trim: true,
-    match: /^[0-9]{10,15}$/ // 10-15 digits
-  },
-}, { timestamps: true });
+    trim: true
+  }
+}, { 
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
+});
+
+// Virtual for age calculation
+memberSchema.virtual('age').get(function() {
+  if (!this.dob) return null;
+  const today = new Date();
+  const birthDate = new Date(this.dob);
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  return age;
+});
+
+// Index for better query performance
+memberSchema.index({ serialNo: 1, fileNo: 1, cnic: 1 });
 
 module.exports = mongoose.model('Member', memberSchema);

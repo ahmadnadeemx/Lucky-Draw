@@ -51,10 +51,19 @@ export const MembersProvider = ({ children }) => {
   const addMember = async (memberData) => {
     try {
       setLoading(true);
-      const response = await axiosInstance.post("/members", memberData);
+
+      // Check if it's FormData (for file upload) or regular object
+      const config = {};
+      if (memberData instanceof FormData) {
+        config.headers = {
+          "Content-Type": "multipart/form-data",
+        };
+      }
+
+      const response = await axiosInstance.post("/members", memberData, config);
 
       // Update local state instantly (fast UX)
-      setMembers((prev) => [response.data, ...prev]);
+      setMembers((prev) => [response.data.member, ...prev]);
 
       return response.data;
     } catch (error) {
@@ -64,7 +73,6 @@ export const MembersProvider = ({ children }) => {
       setLoading(false);
     }
   };
-
   // Update existing member
   const updateMember = async (id, memberData) => {
     try {
@@ -118,14 +126,14 @@ export const MembersProvider = ({ children }) => {
     try {
       setIsDrawing(true);
       setDrawResult(null);
-      
+
       const response = await axiosInstance.get("/members/draw/random");
-      
+
       if (response.data.success) {
         setDrawResult(response.data);
         return response.data;
       } else {
-        throw new Error(response.data.message || 'Failed to perform draw');
+        throw new Error(response.data.message || "Failed to perform draw");
       }
     } catch (error) {
       console.error("Lucky draw error:", error);
