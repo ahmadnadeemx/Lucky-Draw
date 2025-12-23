@@ -11,6 +11,10 @@ import {
   FaEye,
   FaEdit,
   FaTrash,
+  FaImage,
+  FaHashtag,
+  FaCreditCard,
+  FaFileInvoice,
 } from "react-icons/fa";
 import { GiMale, GiFemale } from "react-icons/gi";
 import UpdateMemberModal from "../UpdateMemberModal";
@@ -40,6 +44,7 @@ const MembersTable = ({
   if (loading) {
     return <MembersTableSkeleton rows={5} />;
   }
+
   // State for update modal
   const [updateModalOpen, setUpdateModalOpen] = useState(false);
   const [memberToUpdate, setMemberToUpdate] = useState(null);
@@ -112,6 +117,12 @@ const MembersTable = ({
     // we can add additional logic here if needed
   };
 
+  // Function to handle image preview
+  const handleImagePreview = (member, e) => {
+    e.stopPropagation();
+    setSelectedMember(member);
+  };
+
   return (
     <>
       <div className="relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-2xl shadow-blue-500/10 dark:shadow-black/20 border border-white/30 dark:border-gray-700/30 overflow-hidden">
@@ -141,10 +152,30 @@ const MembersTable = ({
 
           {/* Table with Excel-like scrolling */}
           <div ref={tableContainerRef} className="overflow-auto max-h-[600px]">
-            <table className="w-full min-w-[1200px]">
+            <table className="w-full min-w-[1400px]">
               <thead className="sticky top-0 z-20">
                 <tr className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900">
                   <th className="p-4 border-b-2 border-r border-gray-200 dark:border-gray-700">
+                    <button
+                      onClick={() => handleSort("serialNo")}
+                      className="flex items-center gap-2 font-semibold text-gray-800 dark:text-white hover:text-blue-500 transition-colors"
+                    >
+                      <FaHashtag className="h-4 w-4" />
+                      <span className="whitespace-nowrap">Serial No</span>
+                      {getSortIcon("serialNo")}
+                    </button>
+                  </th>
+                  <th className="p-4 border-b-2 border-gray-200 dark:border-gray-700">
+                    <button
+                      onClick={() => handleSort("fileNo")}
+                      className="flex items-center gap-2 font-semibold text-gray-800 dark:text-white hover:text-blue-500 transition-colors"
+                    >
+                      <FaFileInvoice className="h-4 w-4" />
+                      <span>File Details</span>
+                      {getSortIcon("fileNo")}
+                    </button>
+                  </th>
+                  <th className="p-4 border-b-2 border-gray-200 dark:border-gray-700">
                     <button
                       onClick={() => handleSort("name")}
                       className="flex items-center gap-2 font-semibold text-gray-800 dark:text-white hover:text-blue-500 transition-colors"
@@ -158,17 +189,20 @@ const MembersTable = ({
                       onClick={() => handleSort("mobile")}
                       className="flex items-center gap-2 font-semibold text-gray-800 dark:text-white hover:text-blue-500 transition-colors"
                     >
-                      <span>Contact Information</span>
+                      <span className="whitespace-nowrap">
+                        Contact Information
+                      </span>
                       {getSortIcon("mobile")}
                     </button>
                   </th>
                   <th className="p-4 border-b-2 border-gray-200 dark:border-gray-700">
                     <button
-                      onClick={() => handleSort("cnic")}
+                      onClick={() => handleSort("membership")}
                       className="flex items-center gap-2 font-semibold text-gray-800 dark:text-white hover:text-blue-500 transition-colors"
                     >
-                      <span>Documents</span>
-                      {getSortIcon("cnic")}
+                      <FaCreditCard className="h-4 w-4" />
+                      <span>Membership</span>
+                      {getSortIcon("membership")}
                     </button>
                   </th>
                   <th className="p-4 border-b-2 border-gray-200 dark:border-gray-700">
@@ -176,7 +210,9 @@ const MembersTable = ({
                       onClick={() => handleSort("bmVerification")}
                       className="flex items-center gap-2 font-semibold text-gray-800 dark:text-white hover:text-blue-500 transition-colors"
                     >
-                      <span>Verification Status</span>
+                      <span className="whitespace-nowrap">
+                        Verification Status
+                      </span>
                       {getSortIcon("bmVerification")}
                     </button>
                   </th>
@@ -185,10 +221,17 @@ const MembersTable = ({
                       onClick={() => handleSort("createdAt")}
                       className="flex items-center gap-2 font-semibold text-gray-800 dark:text-white hover:text-blue-500 transition-colors"
                     >
-                      <span>Registration Date</span>
+                      <FaCalendar className="h-4 w-4" />
+                      <span>Registration</span>
                       {getSortIcon("createdAt")}
                     </button>
                   </th>
+                  {/* <th className="p-4 border-b-2 border-l border-gray-200 dark:border-gray-700">
+                    <span className="font-semibold text-gray-800 dark:text-white flex items-center gap-2">
+                      <FaImage className="h-4 w-4" />
+                      <span>Images</span>
+                    </span>
+                  </th> */}
                   <th className="p-4 border-b-2 border-l border-gray-200 dark:border-gray-700">
                     <span className="font-semibold text-gray-800 dark:text-white">
                       Actions
@@ -199,7 +242,7 @@ const MembersTable = ({
               <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                 {filteredMembers.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="p-8 text-center">
+                    <td colSpan="9" className="p-8 text-center">
                       <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
@@ -250,23 +293,63 @@ const MembersTable = ({
                         backgroundColor: "rgba(59, 130, 246, 0.05)",
                       }}
                       className="group cursor-pointer transition-all duration-200 border-b border-gray-100 dark:border-gray-700"
-                      onClick={() => setSelectedMember(member)}
                     >
+                      {/* Serial No Column */}
+                      <td className="bg-white dark:bg-gray-800 group-hover:bg-blue-50 dark:group-hover:bg-gray-700/50 p-4 border-r border-b border-gray-100 dark:border-gray-700">
+                        <span className="text-lg font-bold text-gray-900 dark:text-white">
+                          {member.serialNo}
+                        </span>
+                      </td>
+
+                      {/* File Details Column */}
+                      <td className="p-4 border-b border-gray-100 dark:border-gray-700">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <div className="p-1.5 rounded-lg bg-gray-100 dark:bg-gray-700">
+                              <FaFileInvoice className="h-3 w-3 text-blue-500" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                                File: {member.fileNo}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="p-1.5 rounded-lg bg-gray-100 dark:bg-gray-700">
+                              <FaIdCard className="h-3 w-3 text-blue-500" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                                CNIC: {member.cnic}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Participant Details Column */}
                       <td className="bg-white dark:bg-gray-800 group-hover:bg-blue-50 dark:group-hover:bg-gray-700/50 p-4 border-r border-b border-gray-100 dark:border-gray-700">
                         <div className="flex items-center gap-3">
                           <motion.div
-                            className={`h-10 w-10 rounded-full flex items-center justify-center shadow-lg ${
+                            className={`h-12 w-12 rounded-full flex items-center justify-center shadow-lg ${
                               member.gender === "Male"
                                 ? "bg-gradient-to-br from-blue-500 to-cyan-500"
                                 : "bg-gradient-to-br from-pink-500 to-rose-500"
                             }`}
                             whileHover={{ rotate: 360 }}
                             transition={{ duration: 0.5 }}
+                            onClick={(e) => handleImagePreview(member, e)}
                           >
-                            {member.gender === "Male" ? (
-                              <GiMale className="h-5 w-5 text-white" />
+                            {member.memberImage ? (
+                              <img
+                                src={member.memberImage}
+                                alt={member.name}
+                                className="h-full w-full rounded-full object-cover cursor-pointer"
+                              />
+                            ) : member.gender === "Male" ? (
+                              <GiMale className="h-6 w-6 text-white" />
                             ) : (
-                              <GiFemale className="h-5 w-5 text-white" />
+                              <GiFemale className="h-6 w-6 text-white" />
                             )}
                           </motion.div>
                           <div>
@@ -281,51 +364,57 @@ const MembersTable = ({
                             <p className="text-md text-gray-600 dark:text-gray-400">
                               {member.fatherName}
                             </p>
-                            <p className="text-md font-bold italic text-blue-500 dark:text-blue-400 mt-1">
-                              File: {member.fileNo}
-                            </p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="p-4 border-b border-gray-100 dark:border-gray-700">
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2">
-                            <div className="p-1.5 rounded-lg bg-gray-100 dark:bg-gray-700">
-                              <FaPhone className="h-3 w-3 text-blue-500" />
-                            </div>
-                            <span className="text-md font-medium text-gray-800 dark:text-gray-200">
-                              {member.mobile}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <div className="p-1.5 rounded-lg bg-gray-100 dark:bg-gray-700">
-                              <FaEnvelope className="h-3 w-3 text-blue-500" />
-                            </div>
-                            <span className="text-md text-gray-700 dark:text-gray-300 truncate">
-                              {member.email}
-                            </span>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="p-4">
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2">
-                            <div className="p-1.5 rounded-lg bg-gray-100 dark:bg-gray-700">
-                              <FaIdCard className="h-3 w-3 text-blue-500" />
-                            </div>
-                            <span className="text-md font-medium text-gray-800 dark:text-gray-200">
-                              {member.cnic}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <div className="px-3 py-1 bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-900/30 dark:to-blue-900/30 rounded-lg">
-                              <span className="text-sm font-semibold text-cyan-600 dark:text-cyan-400">
-                                Voucher: {member.feesVoucher}
+                            <div className="flex items-center gap-2 mt-1">
+                              <FaCalendar className="h-3 w-3 text-blue-500" />
+                              <span className="text-xs text-blue-600 dark:text-blue-400">
+                                {formatDate(member.dob)}
                               </span>
                             </div>
                           </div>
                         </div>
                       </td>
+
+                      {/* Contact Information Column */}
+                      <td className="p-4 border-b border-gray-100 dark:border-gray-700">
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-2">
+                            <div className="p-1.5 rounded-lg bg-gray-100 dark:bg-gray-700">
+                              <FaPhone className="h-3 w-3 text-blue-500" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                                {member.mobile}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="p-1.5 rounded-lg bg-gray-100 dark:bg-gray-700">
+                              <FaEnvelope className="h-3 w-3 text-blue-500" />
+                            </div>
+                            <div>
+                              <p className="text-sm text-gray-700 dark:text-gray-300 truncate">
+                                {member.email}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Membership Column */}
+                      <td className="p-4">
+                        <div className="flex items-center justify-center">
+                          <div className="px-4 py-2 rounded-lg bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 border border-blue-100 dark:border-blue-800/30">
+                            <div className="flex items-center gap-2">
+                              <FaCreditCard className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                              <span className="font-semibold text-blue-700 dark:text-blue-400">
+                                {member.membership}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Verification Status Column */}
                       <td className="p-4">
                         <div className="flex flex-col gap-2">
                           <motion.div
@@ -351,38 +440,89 @@ const MembersTable = ({
                               {member.bmVerification ? "Verified" : "Pending"}
                             </span>
                           </motion.div>
-                          <p className="text-xs text-gray-500 dark:text-gray-500">
-                            {member.bmVerification
-                              ? "✓ Eligible for draw"
-                              : "⏳ Verification required"}
-                          </p>
+                          <div className="px-3 py-1 bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-900/30 dark:to-blue-900/30 rounded-lg">
+                            <span className="text-xs font-semibold text-cyan-600 dark:text-cyan-400">
+                              Voucher: {member.feesVoucherText}
+                            </span>
+                          </div>
                         </div>
                       </td>
+
+                      {/* Registration Column */}
                       <td className="p-4">
                         <div className="flex flex-col items-start gap-2">
                           <div className="flex items-center gap-2">
                             <FaCalendar className="h-4 w-4 text-blue-500" />
-                            <span className="text-md font-semibold text-gray-800 dark:text-gray-200 whitespace-nowrap">
-                              {formatDate(member.createdAt)}
-                            </span>
+                            <div>
+                              <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 whitespace-nowrap">
+                                {formatDate(member.createdAt)}
+                              </p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">
+                                Registered
+                              </p>
+                            </div>
                           </div>
                           <div className="px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-lg">
-                            <span className="text-sm text-gray-600 dark:text-gray-400 font-semibold whitespace-nowrap">
-                              Member since{" "}
+                            <span className="text-xs text-gray-600 dark:text-gray-400 font-semibold whitespace-nowrap">
+                              Member for{" "}
                               <span className="text-blue-700 dark:text-green-500">
-                                {formatDate(member.createdAt)}
+                                {Math.floor(
+                                  (new Date() - new Date(member.createdAt)) /
+                                    (1000 * 60 * 60 * 24)
+                                )}{" "}
+                                days
                               </span>
                             </span>
                           </div>
                         </div>
                       </td>
-                      <td className="bg-white dark:bg-gray-800 group-hover:bg-blue-50 dark:group-hover:bg-gray-700/50 p-4 border-l border-gray-100 dark:border-gray-700">
-                        <div className="flex flex-col md:flex-row items-center justify-center gap-2 md:gap-2">
-                          {/* Mobile Layout: Eye icon on left, Delete/Edit stacked on right */}
-                          {/* Desktop Layout: All icons in a row */}
 
-                          <div className="flex flex-row md:flex-row items-center justify-between w-full md:w-auto gap-2 md:gap-2">
-                            {/* View Button (Eye icon) - Left side on mobile, in row on desktop */}
+                      {/* Images Column */}
+                      {/* <td className="p-4 border-l border-gray-100 dark:border-gray-700">
+                        <div className="flex flex-col gap-3">
+                          <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={(e) => handleImagePreview(member, e)}
+                            className={`flex items-center gap-2 px-3 py-2 rounded-lg ${
+                              member.memberImage
+                                ? "bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 hover:from-blue-100 hover:to-cyan-100 dark:hover:from-blue-800/30 dark:hover:to-cyan-800/30"
+                                : "bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600"
+                            } border border-gray-200 dark:border-gray-700 transition-all`}
+                          >
+                            <div className={`p-1.5 rounded-lg ${member.memberImage ? "bg-blue-100 dark:bg-blue-900/30" : "bg-gray-200 dark:bg-gray-600"}`}>
+                              <FaImage className={`h-3 w-3 ${member.memberImage ? "text-blue-600 dark:text-blue-400" : "text-gray-500 dark:text-gray-400"}`} />
+                            </div>
+                            <span className={`text-sm font-medium ${member.memberImage ? "text-blue-700 dark:text-blue-400" : "text-gray-500 dark:text-gray-400"} whitespace-nowrap`}>
+                              {member.memberImage ? "View Photo" : "No Photo"}
+                            </span>
+                          </motion.button>
+
+                          <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={(e) => handleImagePreview(member, e)}
+                            className={`flex items-center gap-2 px-3 py-2 rounded-lg ${
+                              member.feesVoucherImage
+                                ? "bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 hover:from-green-100 hover:to-emerald-100 dark:hover:from-green-800/30 dark:hover:to-emerald-800/30"
+                                : "bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600"
+                            } border border-gray-200 dark:border-gray-700 transition-all whitespace-nowrap`}
+                          >
+                            <div className={`p-1.5 rounded-lg ${member.feesVoucherImage ? "bg-green-100 dark:bg-green-900/30" : "bg-gray-200 dark:bg-gray-600"}`}>
+                              <FaFileInvoice className={`h-3 w-3 ${member.feesVoucherImage ? "text-green-600 dark:text-green-400" : "text-gray-500 dark:text-gray-400"}`} />
+                            </div>
+                            <span className={`text-sm font-medium ${member.feesVoucherImage ? "text-green-700 dark:text-green-400" : "text-gray-500 dark:text-gray-400"}`}>
+                              {member.feesVoucherImage ? "View Voucher" : "No Voucher"}
+                            </span>
+                          </motion.button>
+                        </div>
+                      </td> */}
+
+                      {/* Actions Column */}
+                      <td className="bg-white dark:bg-gray-800 group-hover:bg-blue-50 dark:group-hover:bg-gray-700/50 p-4 border-l border-gray-100 dark:border-gray-700">
+                        <div className="flex flex-col md:flex-row items-center justify-center gap-3">
+                          <div className="flex items-center justify-between w-full gap-2">
+                            {/* View Button */}
                             <motion.button
                               whileHover={{ scale: 1.1, rotate: 5 }}
                               whileTap={{ scale: 0.9 }}
@@ -390,7 +530,7 @@ const MembersTable = ({
                                 e.stopPropagation();
                                 setSelectedMember(member);
                               }}
-                              className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 transition-all md:order-1"
+                              className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 transition-all"
                               title="View Details"
                             >
                               <FaEye className="h-4 w-4 text-white" />
@@ -398,6 +538,17 @@ const MembersTable = ({
 
                             {/* Desktop: Delete and Edit buttons in row */}
                             <div className="hidden md:flex items-center gap-2">
+                              {/* Edit Button */}
+                              <motion.button
+                                whileHover={{ scale: 1.1, rotate: -5 }}
+                                whileTap={{ scale: 0.9 }}
+                                onClick={(e) => handleEditClick(member, e)}
+                                className="h-10 w-10 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-green-500/30 hover:shadow-green-500/50 transition-all"
+                                title="Edit"
+                              >
+                                <FaEdit className="h-4 w-4 text-white" />
+                              </motion.button>
+
                               {/* Delete Button */}
                               <motion.button
                                 whileHover={{ scale: 1.1, rotate: 5 }}
@@ -407,22 +558,22 @@ const MembersTable = ({
                                 title="Delete"
                               >
                                 <FaTrash className="h-4 w-4 text-white" />
-                              </motion.button>
-
-                              {/* Update / Edit Button */}
-                              <motion.button
-                                whileHover={{ scale: 1.1, rotate: -5 }}
-                                whileTap={{ scale: 0.9 }}
-                                onClick={(e) => handleEditClick(member, e)}
-                                className="h-10 w-10 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-green-500/30 hover:shadow-green-500/50 transition-all"
-                                title="Edit"
-                              >
-                                <FaEdit className="h-4 w-4 text-white" />
                               </motion.button>
                             </div>
 
-                            {/* Mobile: Delete and Edit buttons stacked vertically on right side */}
+                            {/* Mobile: Delete and Edit buttons stacked */}
                             <div className="flex md:hidden flex-col items-center gap-2">
+                              {/* Edit Button */}
+                              <motion.button
+                                whileHover={{ scale: 1.1, rotate: -5 }}
+                                whileTap={{ scale: 0.9 }}
+                                onClick={(e) => handleEditClick(member, e)}
+                                className="h-10 w-10 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-green-500/30 hover:shadow-green-500/50 transition-all"
+                                title="Edit"
+                              >
+                                <FaEdit className="h-4 w-4 text-white" />
+                              </motion.button>
+
                               {/* Delete Button */}
                               <motion.button
                                 whileHover={{ scale: 1.1, rotate: 5 }}
@@ -432,17 +583,6 @@ const MembersTable = ({
                                 title="Delete"
                               >
                                 <FaTrash className="h-4 w-4 text-white" />
-                              </motion.button>
-
-                              {/* Update / Edit Button */}
-                              <motion.button
-                                whileHover={{ scale: 1.1, rotate: -5 }}
-                                whileTap={{ scale: 0.9 }}
-                                onClick={(e) => handleEditClick(member, e)}
-                                className="h-10 w-10 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-green-500/30 hover:shadow-green-500/50 transition-all"
-                                title="Edit"
-                              >
-                                <FaEdit className="h-4 w-4 text-white" />
                               </motion.button>
                             </div>
                           </div>
@@ -478,6 +618,10 @@ const MembersTable = ({
               <span className="flex items-center gap-2">
                 <div className="h-3 w-3 rounded-full bg-amber-500"></div>
                 Pending: {pendingMembers}
+              </span>
+              <span className="flex items-center gap-2">
+                <div className="h-3 w-3 rounded-full bg-blue-500"></div>
+                Total: {totalMembers}
               </span>
             </div>
           </div>

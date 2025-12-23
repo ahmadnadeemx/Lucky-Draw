@@ -77,16 +77,31 @@ export const MembersProvider = ({ children }) => {
   const updateMember = async (id, memberData) => {
     try {
       setLoading(true);
-      const response = await axiosInstance.put(`/members/${id}`, memberData);
+
+      // Check if it's FormData (for file upload) or regular object
+      const config = {};
+      if (memberData instanceof FormData) {
+        config.headers = {
+          "Content-Type": "multipart/form-data",
+        };
+      }
+
+      const response = await axiosInstance.put(
+        `/members/${id}`,
+        memberData,
+        config
+      );
 
       // Update local state instantly (fast UX)
       setMembers((prev) =>
-        prev.map((member) => (member._id === id ? response.data : member))
+        prev.map((member) =>
+          member._id === id ? response.data.member : member
+        )
       );
 
       // Update selected member if it's the same
       if (selectedMember && selectedMember._id === id) {
-        setSelectedMember(response.data);
+        setSelectedMember(response.data.member);
       }
 
       return response.data;
@@ -97,7 +112,6 @@ export const MembersProvider = ({ children }) => {
       setLoading(false);
     }
   };
-
   // Delete existing member
   const deleteMember = async (id) => {
     try {
