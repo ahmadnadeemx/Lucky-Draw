@@ -15,13 +15,14 @@ import {
   FaHashtag,
   FaCreditCard,
   FaFileInvoice,
+  FaPrint,
 } from "react-icons/fa";
 import { GiMale, GiFemale } from "react-icons/gi";
 import UpdateMemberModal from "../UpdateMemberModal";
 import DeleteConfirmationModal from "../DeleteConfirmationModal";
 import { useMembers } from "../../../../context/MembersContext";
 import MembersTableSkeleton from "./MembersTableSkeleton";
-
+import PrintInvoice from "../PrintInvoice/PrintInvoice";
 const MembersTable = ({
   filteredMembers,
   totalMembers,
@@ -55,6 +56,14 @@ const MembersTable = ({
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState(null);
   const [deleteSuccess, setDeleteSuccess] = useState(false);
+
+  const [printInvoiceOpen, setPrintInvoiceOpen] = useState(false);
+  const [memberToPrint, setMemberToPrint] = useState(null);
+  const handlePrintClick = (member, e) => {
+    e.stopPropagation();
+    setMemberToPrint(member);
+    setPrintInvoiceOpen(true);
+  };
 
   // Handle edit button click
   const handleEditClick = (member, e) => {
@@ -536,8 +545,30 @@ const MembersTable = ({
                               <FaEye className="h-4 w-4 text-white" />
                             </motion.button>
 
-                            {/* Desktop: Delete and Edit buttons in row */}
+                            {/* Print Button */}
+                            <motion.button
+                              whileHover={{ scale: 1.1, rotate: -5 }}
+                              whileTap={{ scale: 0.9 }}
+                              onClick={(e) => handlePrintClick(member, e)}
+                              className="h-10 w-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 transition-all md:hidden"
+                              title="Print Invoice"
+                            >
+                              <FaPrint className="h-4 w-4 text-white" />
+                            </motion.button>
+
+                            {/* Desktop: All buttons in row */}
                             <div className="hidden md:flex items-center gap-2">
+                              {/* Print Button */}
+                              <motion.button
+                                whileHover={{ scale: 1.1, rotate: -5 }}
+                                whileTap={{ scale: 0.9 }}
+                                onClick={(e) => handlePrintClick(member, e)}
+                                className="h-10 w-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 transition-all"
+                                title="Print Invoice"
+                              >
+                                <FaPrint className="h-4 w-4 text-white" />
+                              </motion.button>
+
                               {/* Edit Button */}
                               <motion.button
                                 whileHover={{ scale: 1.1, rotate: -5 }}
@@ -561,8 +592,19 @@ const MembersTable = ({
                               </motion.button>
                             </div>
 
-                            {/* Mobile: Delete and Edit buttons stacked */}
+                            {/* Mobile: Print, Edit, Delete buttons stacked */}
                             <div className="flex md:hidden flex-col items-center gap-2">
+                              {/* Print Button */}
+                              <motion.button
+                                whileHover={{ scale: 1.1, rotate: -5 }}
+                                whileTap={{ scale: 0.9 }}
+                                onClick={(e) => handlePrintClick(member, e)}
+                                className="h-10 w-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 transition-all"
+                                title="Print Invoice"
+                              >
+                                <FaPrint className="h-4 w-4 text-white" />
+                              </motion.button>
+
                               {/* Edit Button */}
                               <motion.button
                                 whileHover={{ scale: 1.1, rotate: -5 }}
@@ -648,6 +690,14 @@ const MembersTable = ({
         isDeleting={isDeleting}
         deleteError={deleteError}
         deleteSuccess={deleteSuccess}
+      />
+      <PrintInvoice
+        member={memberToPrint}
+        isOpen={printInvoiceOpen}
+        onClose={() => {
+          setPrintInvoiceOpen(false);
+          setMemberToPrint(null);
+        }}
       />
     </>
   );
