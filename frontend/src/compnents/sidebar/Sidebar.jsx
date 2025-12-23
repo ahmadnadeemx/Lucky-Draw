@@ -92,7 +92,7 @@ const Sidebar = () => {
       {/* Navbar */}
       <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-2 bg-white dark:bg-gray-800 dark:border-b border-gray-500 shadow-md h-[50px]">
         <h1 className="text-xl font-bold text-gray-800 dark:text-gray-100">
-          Property Expo
+          SS Property Expo
         </h1>
 
         {/* Menu Button for Small Screens */}
