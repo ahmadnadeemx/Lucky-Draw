@@ -91,9 +91,10 @@ const Sidebar = () => {
     <div className="relative">
       {/* Navbar */}
       <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-2 bg-white dark:bg-gray-800 dark:border-b border-gray-500 shadow-md h-[50px]">
-        <h1 className="text-xl font-bold text-gray-800 dark:text-gray-100">
-          SS Property Expo
-        </h1>
+        <p className=" text-xl font-bold text-gray-800 dark:text-gray-100 flex justify-center items-center gap-1">
+          <img src="/images/sslogo.png" className="h-10 w-10" />
+          Property Expo
+        </p>
 
         {/* Menu Button for Small Screens */}
         <div className="flex items-center space-x-4 text-gray-800 dark:text-gray-100">
